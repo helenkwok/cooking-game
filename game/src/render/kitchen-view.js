@@ -34,22 +34,31 @@ export function drawRoom(ctx, time, rush) {
   ctx.fillStyle = wall;
   ctx.fillRect(0, 0, 1280, 160);
 
-  // Floor: glazed cream and terracotta tiles, each a shade off its neighbours, with a soft
-  // highlight on its top edge.
+  // Floor: worn wooden planks in staggered rows, each board a shade off its neighbours, with a
+  // little grain and a bright worn edge.
   ctx.fillStyle = PALETTE.floorGrout;
   ctx.fillRect(180, 250, 920, 360);
-  const tile = 46;
-  for (let row = 0; row * tile < 360; row += 1) {
-    for (let col = 0; col * tile < 920; col += 1) {
-      const x = 182 + col * tile;
-      const y = 252 + row * tile;
-      ctx.fillStyle = (row + col) % 2 ? PALETTE.floorA : PALETTE.floorB;
-      ctx.fillRect(x, y, tile - 3, tile - 3);
-      const shade = Math.sin(row * 12.9898 + col * 78.233) * 43758.5453;
-      ctx.fillStyle = `rgba(120,70,30,${0.06 * (shade - Math.floor(shade))})`;
-      ctx.fillRect(x, y, tile - 3, tile - 3);
-      ctx.fillStyle = 'rgba(255,255,240,0.22)';
-      ctx.fillRect(x, y, tile - 3, 3);
+  const plank = 34;
+  for (let row = 0; row * plank < 360; row += 1) {
+    const y = 252 + row * plank;
+    let x = 182 - ((row * 97) % 150);
+    for (let i = 0; x < 1100; i += 1) {
+      const len = 150 + ((row * 31 + i * 57) % 4) * 30;
+      const shade = Math.sin(row * 12.9898 + i * 78.233) * 43758.5453;
+      const t = shade - Math.floor(shade);
+      ctx.fillStyle = t < 0.33 ? PALETTE.floorA : t < 0.66 ? PALETTE.floorB : PALETTE.floorC;
+      ctx.fillRect(Math.max(182, x), y, Math.min(x + len - 3, 1098) - Math.max(182, x), plank - 3);
+      ctx.strokeStyle = 'rgba(70,35,15,0.18)';
+      ctx.lineWidth = 1.5;
+      for (const k of [0.3, 0.62]) {
+        ctx.beginPath();
+        ctx.moveTo(Math.max(182, x + 6), y + plank * k);
+        ctx.lineTo(Math.min(1098, x + len - 10), y + plank * k + 1.5);
+        ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(255,225,180,0.16)';
+      ctx.fillRect(Math.max(182, x), y, Math.min(x + len - 3, 1098) - Math.max(182, x), 2.5);
+      x += len;
     }
   }
   // A woven rug in the walkway between the island and the front counter.
