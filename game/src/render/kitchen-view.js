@@ -33,29 +33,63 @@ export function drawRoom(ctx, time, rush) {
   ctx.fillStyle = wall;
   ctx.fillRect(0, 0, 1280, 160);
 
-  // Floor tiles.
+  // Floor: glazed cream and terracotta tiles, each a shade off its neighbours, with a soft
+  // highlight on its top edge.
   ctx.fillStyle = PALETTE.floorGrout;
   ctx.fillRect(180, 250, 920, 360);
   const tile = 46;
   for (let row = 0; row * tile < 360; row += 1) {
     for (let col = 0; col * tile < 920; col += 1) {
+      const x = 182 + col * tile;
+      const y = 252 + row * tile;
       ctx.fillStyle = (row + col) % 2 ? PALETTE.floorA : PALETTE.floorB;
-      ctx.fillRect(182 + col * tile, 252 + row * tile, tile - 3, tile - 3);
+      ctx.fillRect(x, y, tile - 3, tile - 3);
+      const shade = Math.sin(row * 12.9898 + col * 78.233) * 43758.5453;
+      ctx.fillStyle = `rgba(120,70,30,${0.06 * (shade - Math.floor(shade))})`;
+      ctx.fillRect(x, y, tile - 3, tile - 3);
+      ctx.fillStyle = 'rgba(255,255,240,0.22)';
+      ctx.fillRect(x, y, tile - 3, 3);
     }
   }
-  // A warm pool of lamp light on the floor, and the edge shadow under the counters.
-  const pool = ctx.createRadialGradient(640, 420, 40, 640, 420, 520);
-  pool.addColorStop(0, rush ? 'rgba(255,170,90,0.20)' : 'rgba(255,190,120,0.14)');
-  pool.addColorStop(1, 'rgba(0,0,0,0.25)');
+  // A woven rug in the walkway between the island and the front counter.
+  roundRect(ctx, 430, 486, 420, 84, 12, '#a8452f');
+  roundRect(ctx, 438, 494, 404, 68, 9, '#c4573a');
+  ctx.strokeStyle = '#f0c27a';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(448, 504, 384, 48);
+  for (let i = 0; i < 12; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(462 + i * 32, 528);
+    ctx.lineTo(472 + i * 32, 516);
+    ctx.lineTo(482 + i * 32, 528);
+    ctx.lineTo(472 + i * 32, 540);
+    ctx.closePath();
+    ctx.fillStyle = i % 2 ? '#f0c27a' : '#2f4a7a';
+    ctx.fill();
+  }
+  // Floor mat by the pass.
+  roundRect(ctx, 870, 520, 210, 64, 10, 'rgba(110,50,30,0.7)');
+  for (let i = 0; i < 7; i += 1) {
+    ctx.fillStyle = 'rgba(255,210,160,0.18)';
+    ctx.fillRect(882 + i * 28, 526, 12, 52);
+  }
+  // A warm pool of lamp light, and the soft shadow the counters cast on the floor.
+  const pool = ctx.createRadialGradient(640, 400, 60, 640, 420, 560);
+  pool.addColorStop(0, rush ? 'rgba(255,190,110,0.16)' : 'rgba(255,220,160,0.10)');
+  pool.addColorStop(1, 'rgba(60,25,10,0.32)');
   ctx.fillStyle = pool;
   ctx.fillRect(180, 250, 920, 360);
-  ctx.fillStyle = PALETTE.shadow;
-  ctx.fillRect(180, 262, 920, 14);
-  // Floor mat by the pass.
-  roundRect(ctx, 820, 520, 260, 64, 10, 'rgba(120,40,40,0.55)');
-  for (let i = 0; i < 9; i += 1) {
-    ctx.fillStyle = 'rgba(255,200,150,0.12)';
-    ctx.fillRect(834 + i * 28, 526, 12, 52);
+  const back = ctx.createLinearGradient(0, 262, 0, 300);
+  back.addColorStop(0, 'rgba(60,25,10,0.45)');
+  back.addColorStop(1, 'rgba(60,25,10,0)');
+  ctx.fillStyle = back;
+  ctx.fillRect(180, 262, 920, 38);
+  for (const [x0, dir] of [[194, 1], [1086, -1]]) {
+    const side = ctx.createLinearGradient(x0, 0, x0 + dir * 30, 0);
+    side.addColorStop(0, 'rgba(60,25,10,0.35)');
+    side.addColorStop(1, 'rgba(60,25,10,0)');
+    ctx.fillStyle = side;
+    ctx.fillRect(Math.min(x0, x0 + dir * 30), 262, 30, 340);
   }
   void time;
 }
@@ -339,7 +373,7 @@ function drawAssembly(ctx, s, time, wanted) {
   for (let i = 0; i < 8; i += 1) ctx.fillRect(s.x + 12 + i * 13.5, s.y + 8, 2, s.h - 16);
   const recipe = matchRecipe(s.dish);
   const glow = recipe !== null ? (wanted.has(recipe.id) ? 'rgba(120,255,150,0.75)' : 'rgba(255,220,120,0.5)') : null;
-  drawDish(ctx, s.dish, s.cx, s.cy - 2, 36, { glow, steam: s.dish.length > 0 ? time + s.cx : 0 });
+  drawDish(ctx, s.dish, s.cx, s.cy - 2, 41, { glow, steam: s.dish.length > 0 ? time + s.cx : 0 });
   const tag = dishTag(s.dish, recipe, wanted);
   if (tag !== null) {
     ctx.font = `bold 12px ${FONT}`;

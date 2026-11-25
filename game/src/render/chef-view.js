@@ -86,14 +86,14 @@ export function drawRoute(ctx, chef, stations, time) {
   ctx.lineDashOffset = -time * 40;
   ctx.lineCap = 'round';
   ctx.lineWidth = 7;
-  ctx.strokeStyle = 'rgba(255,236,170,0.55)';
+  ctx.strokeStyle = 'rgba(125,58,40,0.6)';
   ctx.beginPath();
   points.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.arc(s.ax, s.ay, 12, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,236,170,0.8)';
+  ctx.strokeStyle = 'rgba(125,58,40,0.85)';
   ctx.lineWidth = 3;
   ctx.stroke();
   ctx.restore();

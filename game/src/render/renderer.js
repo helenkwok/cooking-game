@@ -7,6 +7,7 @@ import { openTickets } from '../orders.js';
 import { phaseIndex } from '../shift.js';
 import { heldTag, ticketProgress, usefulStations } from '../hints.js';
 import { drawChef, drawHeldTag, drawRoute } from './chef-view.js';
+import { drawCornerProps, drawTipJar, drawVignette } from './decor.js';
 import { drawFloaters, drawParticles } from './effects.js';
 import { drawBanner, drawOrderBoard, drawServicePanel } from './hud-view.js';
 import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations, drawStringLights } from './kitchen-view.js';
@@ -71,6 +72,7 @@ export function createRenderer(canvas) {
 
     drawRoom(ctx, time, rush);
     drawBackCounters(ctx);
+    drawCornerProps(ctx, time);
     drawStations(ctx, world.stations, { ...common, sides: ['back', 'left', 'right'] });
     drawRoute(ctx, world.chef, world.stations, time);
     // The chef passes behind the island when north of it and in front of it when south.
@@ -80,9 +82,11 @@ export function createRenderer(canvas) {
     drawStations(ctx, world.stations, { ...common, sides: ['island'] });
     if (!behind) drawChef(ctx, world.chef, time);
     drawFrontCounter(ctx);
+    drawTipJar(ctx, 116, 650, world.shift.coins);
     drawStations(ctx, world.stations, { ...common, sides: ['front'] });
     if (tag !== null) drawHeldTag(ctx, world.chef, tag);
     drawStringLights(ctx, time, rush);
+    drawVignette(ctx);
     drawParticles(ctx, ui.fx);
     drawFloaters(ctx, ui.fx);
     drawOrderBoard(ctx, world.orders, time, ticketProgress(world));
