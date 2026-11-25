@@ -366,6 +366,61 @@ function drawGarnish(ctx, x, y, r) {
 }
 
 /**
+ * A plated dish: a stoneware plate with the stall's indigo rim, a dark glaze swept under the food,
+ * and the food large and gathered in the middle so the plate reads full even when shrunk.
+ */
+function drawPlated(ctx, contents, x, y, r) {
+  ellipse(ctx, x, y + r * 0.05, r * 1.1, r * 1.0, '#c9c0b0');
+  ellipse(ctx, x, y, r * 1.06, r * 0.96, '#2f4a7a');
+  ellipse(ctx, x, y, r * 0.94, r * 0.85, '#f3ede1');
+  for (let i = 0; i < 14; i += 1) {
+    const a = (i / 14) * TAU;
+    ellipse(ctx, x + Math.cos(a) * r, y + Math.sin(a) * r * 0.905, r * 0.035, r * 0.025, '#f6e7c8');
+  }
+  // The glaze the food sits in.
+  ctx.save();
+  ctx.translate(x, y + r * 0.02);
+  ctx.rotate(-0.25);
+  ellipse(ctx, 0, 0, r * 0.68, r * 0.42, '#6b3418');
+  ellipse(ctx, -r * 0.12, -r * 0.08, r * 0.3, r * 0.12, 'rgba(255,200,140,0.25)');
+  ctx.restore();
+  const has = (kind) => contents.includes(kind);
+  if (has('tofu')) {
+    drawTofuCube(ctx, x - r * 0.42, y + r * 0.02, r * 0.3, true);
+    drawTofuCube(ctx, x - r * 0.12, y + r * 0.12, r * 0.3, true);
+    drawTofuCube(ctx, x - r * 0.28, y - r * 0.24, r * 0.3, true);
+  }
+  if (has('mushroom')) drawMushroomSlices(ctx, x + r * 0.3, y - r * 0.08, r * 0.95, true);
+  if (has('pork')) {
+    drawChashu(ctx, x + r * 0.05, y + r * 0.35, r * 0.24);
+    drawChashu(ctx, x + r * 0.32, y + r * 0.3, r * 0.24);
+  }
+  if (has('egg')) {
+    drawEggHalf(ctx, x - r * 0.5, y + r * 0.38, r * 0.8, 0.4);
+    drawEggHalf(ctx, x - r * 0.3, y + r * 0.44, r * 0.8, 0.9);
+  }
+  if (has('chili')) {
+    // A zigzag drizzle of chili oil across the top, with a few flakes.
+    ctx.beginPath();
+    for (let i = 0; i <= 8; i += 1) {
+      const px = x - r * 0.62 + i * r * 0.155;
+      const py = y - r * 0.02 + (i % 2 ? -r * 0.16 : r * 0.12);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    stroke(ctx, 'rgba(214,40,22,0.9)', r * 0.07);
+    for (let i = 0; i < 7; i += 1) ellipse(ctx, x + (jitter(i + 51) - 0.5) * r, y + (jitter(i + 63) - 0.5) * r * 0.6, r * 0.04, r * 0.025, '#ff5a2a');
+  }
+  if (has('scallion')) {
+    for (let i = 0; i < 9; i += 1) {
+      const a = i * 2.3;
+      const d = r * 0.5 * Math.sqrt(jitter(i + 71));
+      drawScallionRing(ctx, x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, r * 0.07);
+    }
+  }
+}
+
+/**
  * A dish seen from above at radius r: a glazed bowl on its saucer for noodle and soup dishes, a
  * plate for the rest, an empty serving board when there is nothing in it yet.
  */
@@ -404,13 +459,7 @@ export function drawDish(ctx, contents, x, y, r, { glow = null, steam = 0 } = {}
     drawToppings(ctx, contents, x, y, r * 0.8);
     if (contents.includes('broth') && contents.includes('noodles')) drawGarnish(ctx, x, y, r);
   } else {
-    ellipse(ctx, x, y, r * 1.08, r * 0.98, '#d9d2c4');
-    ellipse(ctx, x, y - r * 0.02, r * 1.04, r * 0.94, '#fbf8f1');
-    ellipse(ctx, x, y - r * 0.02, r * 0.78, r * 0.7, '#f1ebdf');
-    ctx.beginPath();
-    ctx.ellipse(x, y - r * 0.02, r * 0.92, r * 0.83, 0, 0, TAU);
-    stroke(ctx, '#c76b3a', r * 0.03);
-    drawToppings(ctx, contents, x, y, r * 0.85);
+    drawPlated(ctx, contents, x, y, r);
   }
   if (steam > 0) drawSteam(ctx, x, y - r * 0.4, r, steam);
 }

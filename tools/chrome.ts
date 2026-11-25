@@ -64,7 +64,8 @@ export async function withChrome(chromePath: string, work: (page: Page, gameUrl:
   ], { stdio: 'ignore' });
   try {
     let target: any = null;
-    for (let attempt = 0; attempt < 50 && target === null; attempt += 1) {
+    // A freshly updated Chrome can take several seconds to come up: allow it 40.
+    for (let attempt = 0; attempt < 200 && target === null; attempt += 1) {
       await sleep(200);
       try {
         const list = await (await fetch(`http://127.0.0.1:${debugPort}/json/list`)).json();
