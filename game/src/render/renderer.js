@@ -5,7 +5,8 @@ import { ISLAND, STAGE } from '../config.js';
 import { stationInReach } from '../chef.js';
 import { openTickets } from '../orders.js';
 import { phaseIndex } from '../shift.js';
-import { drawChef } from './chef-view.js';
+import { heldTag, ticketProgress, usefulStations } from '../hints.js';
+import { drawChef, drawHeldTag } from './chef-view.js';
 import { drawFloaters, drawParticles } from './effects.js';
 import { drawBanner, drawOrderBoard, drawServicePanel } from './hud-view.js';
 import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations } from './kitchen-view.js';
@@ -64,7 +65,9 @@ export function createRenderer(canvas) {
     const playing = screen === SCREEN_PLAY;
     const reach = playing ? stationInReach(world.chef, world.stations) : null;
     const wanted = new Set(openTickets(world.orders).map((t) => t.recipe.id));
-    const common = { time, reach, hover: playing ? ui.hover : null, knives: ui.fx.knives, wanted, passDisplay: ui.fx.passDisplay };
+    const useful = playing || ui.hints ? usefulStations(world) : new Set();
+    const common = { time, reach, hover: playing ? ui.hover : null, knives: ui.fx.knives, wanted, passDisplay: ui.fx.passDisplay, useful };
+    const tag = playing || ui.hints ? heldTag(world) : null;
 
     drawRoom(ctx, time, rush);
     drawBackCounters(ctx);
@@ -77,9 +80,10 @@ export function createRenderer(canvas) {
     if (!behind) drawChef(ctx, world.chef, time);
     drawFrontCounter(ctx);
     drawStations(ctx, world.stations, { ...common, sides: ['front'] });
+    if (tag !== null) drawHeldTag(ctx, world.chef, tag);
     drawParticles(ctx, ui.fx);
     drawFloaters(ctx, ui.fx);
-    drawOrderBoard(ctx, world.orders, time);
+    drawOrderBoard(ctx, world.orders, time, ticketProgress(world));
     drawServicePanel(ctx, world.shift, time, ui.fx.coinPulse);
     if (ui.fx.banner !== null && playing) drawBanner(ctx, ui.fx.banner.message, ui.fx.banner.sub, ui.fx.banner.life);
 

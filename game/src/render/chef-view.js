@@ -1,5 +1,6 @@
 // The stall's cook, seen from above and a little in front: a round cook in an indigo jacket, a
 // tall red headscarf and an apron, waddling as they walk and holding what they carry up high.
+import { FONT } from '../config.js';
 import { drawDish, drawIngredient } from './food-art.js';
 
 const TAU = Math.PI * 2;
@@ -66,4 +67,28 @@ export function drawChef(ctx, chef, time) {
     else drawIngredient(ctx, chef.held, 0, -90, 52, time);
   }
   ctx.restore();
+}
+
+const TAG_COLOURS = {
+  good: ['#5cc87a', '#14301c'],
+  warn: ['#f2b134', '#3a2608'],
+  bad: ['#e5534b', '#fff4f0'],
+  plain: ['rgba(30,18,36,0.85)', '#fff6e8'],
+};
+
+/** A little pill over what the chef holds saying what it needs next (→ BOIL, READY, a dish's name). */
+export function drawHeldTag(ctx, chef, tag) {
+  const [fill, ink] = TAG_COLOURS[tag.tone];
+  ctx.font = `bold 13px ${FONT}`;
+  const w = ctx.measureText(tag.text).width + 18;
+  const x = chef.x - w / 2;
+  const y = chef.y - 146;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, 22, 11);
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = ink;
+  ctx.fillText(tag.text, chef.x, y + 11.5);
 }

@@ -15,7 +15,7 @@ export const ISLAND = { x: 452, y: 362, w: 376, h: 92 };
 
 export const CHEF = {
   radius: 24,
-  speed: 340,
+  speed: 400,
   /** How close (px) the chef's feet must be to a station's access point to work it. */
   reach: 78,
 };

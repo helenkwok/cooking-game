@@ -75,7 +75,7 @@ function runShot(name) {
   const scene = stageShot(name, world, fx);
   let painted = 0;
   function paint() {
-    renderer.draw(world, scene.screen, { fx, time: scene.time, hover: null, best: scene.best, servedDishes: scene.servedDishes });
+    renderer.draw(world, scene.screen, { fx, time: scene.time, hover: null, best: scene.best, servedDishes: scene.servedDishes, hints: true });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else window.__shotReady = true;
@@ -217,6 +217,9 @@ function runGame() {
       audio.stopMusic();
     }
   });
+
+  // ?debug exposes the live world to the smoke test (tools/smoke.ts); nothing reads it otherwise.
+  if (params.has('debug')) window.__world = world;
 
   announce('Steam Lantern. Press Space or click to open the stall.');
   requestAnimationFrame(frame);

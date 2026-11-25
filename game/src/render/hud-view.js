@@ -34,7 +34,21 @@ function patienceColour(fraction) {
   return PALETTE.bad;
 }
 
-function drawTicket(ctx, ticket, x, y, time) {
+function drawCheck(ctx, x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 7, 0, TAU);
+  ctx.fillStyle = '#2e9e52';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x - 3.5, y);
+  ctx.lineTo(x - 1, y + 3);
+  ctx.lineTo(x + 4, y - 3);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawTicket(ctx, ticket, x, y, time, have) {
   const fraction = ticket.left / ticket.patience;
   const urgent = fraction < 0.25 && ticket.leaving === 0;
   ctx.save();
@@ -58,7 +72,7 @@ function drawTicket(ctx, ticket, x, y, time) {
   roundRect(ctx, 0, 0, TICKET.width, TICKET.height, 4, urgent ? '#ffe2d6' : PALETTE.paper);
   roundRect(ctx, 0, 0, TICKET.width, 26, 4, ticket.recipe.hue);
   text(ctx, ticket.recipe.name, TICKET.width / 2, 14, 15, '#fffaf0');
-  text(ctx, `#${ticket.id}`, TICKET.width - 6, 38, 11, PALETTE.inkSoft, 'right');
+  text(ctx, `#${ticket.id}`, TICKET.width / 2 + 4, TICKET.height - 33, 11, PALETTE.inkSoft, 'center', 'normal');
   drawDish(ctx, ticket.recipe.items, 42, 64, 25);
   // The ingredients, two rows of icons.
   ticket.recipe.items.forEach((kind, i) => {
@@ -66,8 +80,10 @@ function drawTicket(ctx, ticket, x, y, time) {
     const row = Math.floor(i / 3);
     const ix = 92 + col * 28;
     const iy = 46 + row * 30;
-    roundRect(ctx, ix - 13, iy - 13, 26, 26, 6, PALETTE.paperShade);
+    const done = have.includes(kind);
+    roundRect(ctx, ix - 13, iy - 13, 26, 26, 6, done ? '#cdeccf' : PALETTE.paperShade);
     drawIngredientIcon(ctx, kind, ix, iy, 30);
+    if (done) drawCheck(ctx, ix + 10, iy - 10);
   });
   // Patience bar.
   roundRect(ctx, 8, TICKET.height - 20, TICKET.width - 16, 12, 6, 'rgba(43,34,48,0.18)');
@@ -89,7 +105,8 @@ function drawTicket(ctx, ticket, x, y, time) {
   ctx.restore();
 }
 
-export function drawOrderBoard(ctx, orders, time) {
+/** The rail and its tickets; `progress` maps a ticket id to the ingredients already in its dish. */
+export function drawOrderBoard(ctx, orders, time, progress) {
   roundRect(ctx, 10, 4, 966, 140, 10, '#2b1d22');
   roundRect(ctx, 14, 8, 958, 132, 8, '#3a272d');
   ctx.fillStyle = '#c8a95a';
@@ -97,7 +114,7 @@ export function drawOrderBoard(ctx, orders, time) {
   if (orders.tickets.length === 0) text(ctx, 'Waiting for the first customers…', 492, 76, 18, 'rgba(255,240,220,0.5)', 'center', 'normal');
   orders.tickets.forEach((ticket, index) => {
     const slot = ticketSlot(index);
-    drawTicket(ctx, ticket, slot.x, slot.y, time);
+    drawTicket(ctx, ticket, slot.x, slot.y, time, progress.get(ticket.id) ?? []);
   });
 }
 

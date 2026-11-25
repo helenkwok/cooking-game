@@ -331,7 +331,7 @@ function drawPass(ctx, s, time, display) {
 }
 
 /** Every station, with the one the chef can reach and the one under the mouse outlined. */
-export function drawStations(ctx, stations, { time, reach, hover, knives, wanted, passDisplay, sides }) {
+export function drawStations(ctx, stations, { time, reach, hover, knives, wanted, passDisplay, sides, useful }) {
   for (const s of stations) {
     if (!sides.includes(s.side)) continue;
     switch (s.type) {
@@ -344,6 +344,18 @@ export function drawStations(ctx, stations, { time, reach, hover, knives, wanted
       case ASSEMBLY: drawAssembly(ctx, s, time, wanted); break;
       case PASS: drawPass(ctx, s, time, passDisplay); break;
       default:
+    }
+    if (useful.has(s.id) && s !== reach) {
+      // Where what you hold can go next: a dashed green outline that breathes.
+      ctx.save();
+      ctx.setLineDash([10, 7]);
+      ctx.lineDashOffset = -time * 30;
+      ctx.beginPath();
+      ctx.roundRect(s.x + 3, s.y + 3, s.w - 6, s.h - 6, 10);
+      ctx.strokeStyle = `rgba(140,255,170,${0.55 + 0.3 * Math.sin(time * 5)})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
     }
     if (s === reach || s === hover) {
       ctx.beginPath();
