@@ -2,7 +2,7 @@
 // the griddle keep cooking on their own (so a good route starts the slow things first) and ruin
 // food left too long; boards only chop while the chef chops. Every rule reports an event the
 // renderer and the sound answer at once.
-import { COOK } from './config.js';
+import { COOK, SCORE } from './config.js';
 import { createItem, INGREDIENTS, isReady, nextStep, STEP_BOIL, STEP_CHOP, STEP_SEAR } from './recipes.js';
 import { ASSEMBLY, BIN, BOARD, CRATE, GRIDDLE, PASS, POT, SHELF } from './stations.js';
 
@@ -40,6 +40,19 @@ function addToDish(world, contents, item, s) {
 
 function cookerStep(s) {
   return s.type === POT ? STEP_BOIL : STEP_SEAR;
+}
+
+/** Food just done and still within the PERFECT window (the gold arc on the ring). */
+function inPerfectWindow(s) {
+  const item = s.item;
+  return item !== null && !item.burnt && nextStep(item) !== cookerStep(s) && item.progress <= COOK.perfect;
+}
+
+/** A PERFECT pull: a few coins and a count for the results card. */
+function payPerfect(world, s) {
+  world.shift.coins += SCORE.perfectBonus;
+  world.shift.perfects += 1;
+  event(world, 'perfect', s, { bonus: SCORE.perfectBonus });
 }
 
 /**
@@ -99,11 +112,17 @@ export function interact(world, s) {
         chef.held = null;
         event(world, s.type === POT ? 'splash' : 'sizzle', s, { kind: s.item.kind });
       } else if (held === null && s.item !== null) {
+        const perfect = inPerfectWindow(s);
         chef.held = s.item;
         s.item = null;
         event(world, 'pickup', s, { kind: chef.held.kind });
+        if (perfect) payPerfect(world, s);
       } else if (isDish(held) && s.item !== null && isReady(s.item)) {
-        if (addToDish(world, held.contents, s.item, s)) s.item = null;
+        const perfect = inPerfectWindow(s);
+        if (addToDish(world, held.contents, s.item, s)) {
+          s.item = null;
+          if (perfect) payPerfect(world, s);
+        }
       } else if (held !== null) {
         event(world, 'refuse', s, { text: 'Burner is busy' });
       }
@@ -204,14 +223,15 @@ export function updateCookers(world, stations, dt) {
   }
 }
 
-/** 0..1 for a station's visible progress ring, and whether it is in its warning window. */
+/** 0..1 for a station's ring; whether it is in its PERFECT window (and that window's share) or warning window. */
 export function cookerGauge(s) {
   const item = s.item;
-  if (item === null || item.burnt) return { cooking: 0, overdone: 0, warn: false };
+  if (item === null || item.burnt) return { cooking: 0, overdone: 0, warn: false, perfect: false, share: 0 };
   const step = cookerStep(s);
   const grace = s.type === POT ? COOK.boilGrace : COOK.searGrace;
-  if (nextStep(item) === step) return { cooking: item.progress / INGREDIENTS[item.kind].times[step], overdone: 0, warn: false };
-  return { cooking: 1, overdone: item.progress / grace, warn: grace - item.progress <= COOK.warnAt };
+  const share = COOK.perfect / grace;
+  if (nextStep(item) === step) return { cooking: item.progress / INGREDIENTS[item.kind].times[step], overdone: 0, warn: false, perfect: false, share };
+  return { cooking: 1, overdone: item.progress / grace, warn: grace - item.progress <= COOK.warnAt, perfect: item.progress <= COOK.perfect, share };
 }
 
 export { isDish };

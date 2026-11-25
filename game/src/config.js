@@ -38,6 +38,8 @@ export const COOK = {
   searGrace: 8,
   /** The last seconds of grace flash a warning. */
   warnAt: 3.5,
+  /** Take food off within this many seconds of done for a PERFECT pull. */
+  perfect: 2.5,
 };
 
 export const SCORE = {
@@ -46,6 +48,8 @@ export const SCORE = {
   /** Extra coins per combo level (serves in a row with half the patience or more left). */
   comboBonus: 4,
   comboCap: 6,
+  /** Coins for each PERFECT pull off a pot or the griddle. */
+  perfectBonus: 5,
 };
 
 export const PALETTE = {
@@ -71,6 +75,7 @@ export const PALETTE = {
   inkSoft: '#6d5d6e',
   good: '#5cc87a',
   warn: '#f2b134',
+  perfect: '#fff27a',
   bad: '#e5534b',
   coin: '#ffd25a',
   text: '#fff6e8',

@@ -35,8 +35,8 @@ function burst(fx, x, y, count, colours, speed, gravity, life, size) {
 }
 
 /** Floating words; `screen` ones (by the order board) are drawn outside the kitchen view. */
-function floater(fx, x, y, words, colour, size = 20, screen = false) {
-  fx.floaters.push({ x, y, words, colour, size, age: 0, screen });
+function floater(fx, x, y, words, colour, size = 20, screen = false, life = 1.1) {
+  fx.floaters.push({ x, y, words, colour, size, age: 0, screen, life });
 }
 
 /** Turn this step's world events into effects; `orders` places ticket-side effects. */
@@ -65,6 +65,11 @@ export function applyEvents(fx, events, orders) {
       case 'sizzle':
         burst(fx, e.x, e.y, 12, ['#ffd27a', '#ff8a3d', '#fff2b0'], 160, 200, 0.4, 3);
         break;
+      case 'perfect':
+        floater(fx, e.x, e.y - 64, `PERFECT! +${e.bonus}`, PALETTE.perfect, 30, false, 1.5);
+        burst(fx, e.x, e.y - 10, 26, [PALETTE.perfect, '#ffffff', PALETTE.coin], 300, 260, 0.8, 4.5);
+        fx.coinPulse = 1;
+        break;
       case 'cooked':
         floater(fx, e.x, e.y - 50, 'Done!', '#9df0b0', 18);
         break;
@@ -80,11 +85,13 @@ export function applyEvents(fx, events, orders) {
         floater(fx, e.x, e.y - 50, e.text, '#ffc4b8', 15);
         break;
       case 'serve': {
-        floater(fx, e.x, e.y - 60, `+${e.earned}`, PALETTE.coin, 30);
-        if (e.tip > 0) floater(fx, e.x + 70, e.y - 30, `tip ${e.tip}`, '#ffe9a8', 15);
-        if (e.combo > 1) floater(fx, e.x - 70, e.y - 30, `combo x${e.combo}`, '#8ff0a4', 17);
-        if (e.vip) floater(fx, e.x, e.y - 100, '★ VIP double pay!', PALETTE.coin, 20);
-        burst(fx, e.x, e.y - 10, 22, [PALETTE.coin, '#fff2b0', '#ffb547'], 260, 500, 0.8, 5);
+        // The big moment: the coins large over the pass, the combo and tip beside them.
+        floater(fx, e.x, e.y - 70, `+${e.earned}`, PALETTE.coin, 46, false, 1.6);
+        if (e.tip > 0) floater(fx, e.x + 96, e.y - 34, `tip +${e.tip}`, '#ffe9a8', 20, false, 1.4);
+        if (e.combo > 1) floater(fx, e.x - 100, e.y - 34, `COMBO x${e.combo}!`, '#8ff0a4', e.combo >= 3 ? 26 : 21, false, 1.4);
+        if (e.vip) floater(fx, e.x, e.y - 124, '★ CRITIC SERVED · DOUBLE PAY!', PALETTE.coin, 26, false, 1.6);
+        burst(fx, e.x, e.y - 10, 34 + 6 * e.combo, [PALETTE.coin, '#fff2b0', '#ffb547'], 300, 500, 0.9, 5.5);
+        if (e.combo >= 3) fx.shake = Math.max(fx.shake, 0.15);
         fx.coinPulse = 1;
         fx.passDisplay.push({ contents: e.contents, age: 0 });
         if (fx.passDisplay.length > 3) fx.passDisplay.shift();
@@ -119,7 +126,7 @@ export function updateEffects(fx, dt) {
   }
   fx.particles = fx.particles.filter((p) => p.age < p.life);
   for (const f of fx.floaters) f.age += dt;
-  fx.floaters = fx.floaters.filter((f) => f.age < 1.1);
+  fx.floaters = fx.floaters.filter((f) => f.age < f.life);
   for (const id of Object.keys(fx.knives)) {
     fx.knives[id] += dt * 7;
     if (fx.knives[id] >= 1) delete fx.knives[id];
@@ -150,10 +157,12 @@ export function drawFloaters(ctx, fx, screen) {
   ctx.textBaseline = 'middle';
   for (const f of fx.floaters) {
     if (f.screen !== screen) continue;
-    const t = f.age / 1.1;
+    const t = f.age / f.life;
     ctx.globalAlpha = 1 - t * t;
-    ctx.font = `bold ${f.size}px ${FONT}`;
-    ctx.lineWidth = 4;
+    // Big words pop in: a quick overshoot in their first tenth of a second.
+    const pop = f.size >= 26 ? 1 + 0.35 * Math.max(0, 1 - f.age / 0.12) : 1;
+    ctx.font = `bold ${Math.round(f.size * pop)}px ${FONT}`;
+    ctx.lineWidth = f.size >= 26 ? 6 : 4;
     ctx.strokeStyle = 'rgba(30,15,30,0.8)';
     ctx.strokeText(f.words, f.x, f.y - t * 40);
     ctx.fillStyle = f.colour;

@@ -1,6 +1,6 @@
 // The sidebar beside the kitchen: tonight's place in the five-night campaign, the live state of
 // every burner, and a key to what the kitchen's marks mean, so the stall explains itself.
-import { COOK, FONT, PALETTE } from '../config.js';
+import { COOK, FONT, PALETTE, SCORE } from '../config.js';
 import { NIGHTS, twistLine } from '../nights.js';
 import { stoveRows } from '../hints.js';
 import { drawIngredientIcon } from './food-art.js';
@@ -57,6 +57,7 @@ function drawNights(ctx, shift, progress) {
 
 const STATE_STYLE = {
   cooking: { colour: PALETTE.good, word: (r) => `${Math.round(r.fraction * 100)}%` },
+  perfect: { colour: PALETTE.perfect, word: () => 'PERFECT!' },
   ready: { colour: PALETTE.warn, word: () => 'READY' },
   hot: { colour: PALETTE.bad, word: () => 'HOT!' },
   burnt: { colour: '#8a8a8a', word: () => 'BURNT' },
@@ -79,10 +80,10 @@ function drawStove(ctx, world, time) {
 }
 
 function keyIcon(ctx, kind, x, y) {
-  if (kind === 'ring' || kind === 'amber' || kind === 'red') {
+  if (kind === 'ring' || kind === 'gold' || kind === 'amber' || kind === 'red') {
     ctx.beginPath();
     ctx.arc(x, y, 8, -Math.PI / 2, kind === 'ring' ? Math.PI * 0.8 : Math.PI * 1.5);
-    ctx.strokeStyle = kind === 'ring' ? PALETTE.good : kind === 'amber' ? PALETTE.warn : PALETTE.bad;
+    ctx.strokeStyle = { ring: PALETTE.good, gold: PALETTE.perfect, amber: PALETTE.warn, red: PALETTE.bad }[kind];
     ctx.lineWidth = 3.5;
     ctx.stroke();
   } else if (kind === 'dash') {
@@ -116,6 +117,7 @@ function drawKey(ctx) {
   const rows = [
     ['pips', `board: ${COOK.chopStrokes} knife strokes to chop`],
     ['ring', 'cooking on its own'],
+    ['gold', `gold: pull now, PERFECT +${SCORE.perfectBonus}`],
     ['amber', 'done: take it off'],
     ['red', 'about to burn!'],
     ['dash', 'where your food goes'],
@@ -125,7 +127,7 @@ function drawKey(ctx) {
   for (const [kind, words] of rows) {
     keyIcon(ctx, kind, x + 22, y + 6);
     text(ctx, words, x + 38, y + 6, 11.5, PALETTE.text, 'left', 'normal');
-    y += 24;
+    y += 21.5;
   }
 }
 

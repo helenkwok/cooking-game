@@ -75,7 +75,7 @@ export function nextUp(world) {
   return { ticket: urgent, missing: urgent.recipe.items.filter((kind) => !have.includes(kind)) };
 }
 
-/** One row per burner for the sidebar: { name, food, state, fraction } with state cooking/ready/hot/burnt/empty. */
+/** One row per burner for the sidebar: { name, food, state, fraction } with state cooking/perfect/ready/hot/burnt/empty. */
 export function stoveRows(world) {
   const names = { 'pot-a': 'Pot A', 'pot-b': 'Pot B', 'griddle-a': 'Griddle A', 'griddle-b': 'Griddle B' };
   return Object.keys(names).map((id) => {
@@ -84,6 +84,7 @@ export function stoveRows(world) {
     const food = INGREDIENTS[s.item.kind].name;
     if (s.item.burnt) return { name: names[id], food, state: 'burnt', fraction: 1 };
     const gauge = cookerGauge(s);
+    if (gauge.perfect) return { name: names[id], food, state: 'perfect', fraction: 1 - gauge.overdone };
     if (gauge.overdone > 0) return { name: names[id], food, state: gauge.warn ? 'hot' : 'ready', fraction: 1 - gauge.overdone };
     return { name: names[id], food, state: 'cooking', fraction: gauge.cooking };
   });

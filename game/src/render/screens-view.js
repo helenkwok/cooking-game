@@ -1,6 +1,6 @@
 // The screens over the kitchen: the title sign with tonight's menu and the five-night picker, the
 // pause card, and the end-of-night results with their stars and what the night unlocked.
-import { FONT, PALETTE } from '../config.js';
+import { FONT, PALETTE, SCORE } from '../config.js';
 import { NIGHTS, twistLine } from '../nights.js';
 import { RECIPES } from '../recipes.js';
 import { starsFor } from '../shift.js';
@@ -190,12 +190,13 @@ export function drawResults(ctx, shift, time, servedDishes, ready, outcome) {
     ['Dishes served', shift.vipServed > 0 ? `${shift.served} (${shift.vipServed} VIP)` : String(shift.served)],
     ['Customers lost', String(shift.missed)],
     ['Best combo', shift.bestCombo > 1 ? `x${shift.bestCombo}` : '–'],
+    ['PERFECT pulls', shift.perfects > 0 ? `${shift.perfects} (+${shift.perfects * SCORE.perfectBonus} coins)` : '–'],
     [`Best on this night`, `${Math.max(outcome?.best ?? 0, shift.coins)} coins`],
   ];
   rows.forEach(([name, value], i) => {
-    const y = 348 + i * 32;
+    const y = 344 + i * 26;
     ctx.fillStyle = i % 2 ? 'rgba(43,34,48,0.05)' : 'rgba(43,34,48,0.1)';
-    ctx.fillRect(380, y - 14, 520, 28);
+    ctx.fillRect(380, y - 12, 520, 24);
     text(ctx, name, 396, y, 17, PALETTE.ink, 'left', 'normal');
     text(ctx, value, 884, y, 17, PALETTE.ink, 'right');
   });

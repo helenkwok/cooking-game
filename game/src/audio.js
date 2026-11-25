@@ -96,6 +96,11 @@ export function createAudio() {
       tone(1046, t, 0.15, { gain: 0.14 });
       tone(1568, t + 0.08, 0.2, { gain: 0.1 });
     },
+    perfect() {
+      // A rising three-note sparkle for a PERFECT pull.
+      const t = ctx.currentTime;
+      [1318, 1661, 2093].forEach((f, i) => tone(f, t + i * 0.06, 0.18, { type: 'triangle', gain: 0.12 }));
+    },
     burnt() {
       const t = ctx.currentTime;
       tone(140, t, 0.4, { type: 'sawtooth', gain: 0.12, bend: 0.5 });

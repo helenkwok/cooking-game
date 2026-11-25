@@ -35,6 +35,7 @@ const SOUND_FOR = {
   splash: (a) => a.play('splash'),
   sizzle: (a) => a.play('sizzle'),
   cooked: (a) => a.play('cooked'),
+  perfect: (a) => a.play('perfect'),
   burnt: (a) => a.play('burnt'),
   serve: (a, e) => {
     a.play('serve', e.combo);

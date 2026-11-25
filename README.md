@@ -8,7 +8,7 @@
 
 ![Steam Lantern in the Night Rush](screenshots/1-service.jpg)
 
-Tickets clip onto the order board, and each one is a dish with a patience bar. Take ingredients from the crates, chop them on a board, boil them in a pot or sear them on the griddle, then build the dish on a serving mat. Carry it to the pass before the customer walks out. Pots and the griddle keep cooking while you work elsewhere, so a good route starts the slow things first. Leave food on the heat too long and it burns.
+Tickets clip onto the order board, and each one is a dish with a patience bar. Take ingredients from the crates, chop them on a board, boil them in a pot or sear them on the griddle, then build the dish on a serving mat. Carry it to the pass before the customer walks out. Pots and the griddle keep cooking while you work elsewhere, so a good route starts the slow things first. Pull it off in the first moments after it is done, while the ring glows gold, for a PERFECT bonus. Leave food on the heat too long and it burns.
 
 - **A five-night campaign**, each night with its own menu, pace and twist. Earn a star to open the next night:
   1. Opening Night

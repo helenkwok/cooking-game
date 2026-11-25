@@ -25,6 +25,7 @@ export function createShift(nightId = 3) {
     bestCombo: 0,
     served: 0,
     vipServed: 0,
+    perfects: 0,
     missed: 0,
     over: false,
     closedEarly: false,

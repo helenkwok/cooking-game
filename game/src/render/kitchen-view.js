@@ -348,13 +348,32 @@ function drawCooker(ctx, s, time) {
   }
   if (s.item !== null && !s.item.burnt) {
     const r = s.type === POT ? 42 : 34;
-    if (gauge.overdone > 0) {
+    if (gauge.perfect) {
+      // The PERFECT window: a glowing gold ring and tag; take it off now for the bonus.
+      const pulse = 0.5 + 0.5 * Math.sin(time * 12);
+      ctx.save();
+      ctx.shadowColor = PALETTE.perfect;
+      ctx.shadowBlur = 10 + 10 * pulse;
+      drawProgressRing(ctx, s.cx, s.cy, r, 1 - gauge.overdone, PALETTE.perfect, 8);
+      ctx.restore();
+      roundRect(ctx, s.x - 34, s.cy - 13, 76, 26, 9, PALETTE.perfect);
+      label(ctx, 'PERFECT!', s.x + 4, s.cy + 1, 13, '#4a2a00');
+    } else if (gauge.overdone > 0) {
       const flash = gauge.warn && Math.floor(time * 6) % 2 === 0;
       drawProgressRing(ctx, s.cx, s.cy, r, 1 - gauge.overdone, flash ? PALETTE.bad : PALETTE.warn);
       // A tag on the counter beside the burner: ready to take, or about to burn.
       roundRect(ctx, s.x - 10, s.cy - 12, 52, 24, 8, gauge.warn ? (flash ? PALETTE.bad : '#8a1f1a') : PALETTE.good);
       label(ctx, gauge.warn ? 'HOT!' : 'READY', s.x + 16, s.cy + 1, 12, gauge.warn ? '#fff' : PALETTE.ink);
-    } else drawProgressRing(ctx, s.cx, s.cy, r, gauge.cooking, PALETTE.good);
+    } else {
+      drawProgressRing(ctx, s.cx, s.cy, r, gauge.cooking, PALETTE.good);
+      // The gold zone at the ring's end: when the ring is full, that is the moment to pull it.
+      ctx.beginPath();
+      ctx.arc(s.cx, s.cy, r + 7, -Math.PI / 2 - TAU * gauge.share, -Math.PI / 2);
+      ctx.strokeStyle = PALETTE.perfect;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
   } else if (s.item !== null && s.item.burnt) {
     roundRect(ctx, s.x - 10, s.cy - 12, 52, 24, 8, '#2b2020');
     label(ctx, 'BIN IT', s.x + 16, s.cy + 1, 11, '#ff8f84');

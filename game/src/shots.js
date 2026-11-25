@@ -77,8 +77,8 @@ function ticket(world, id, fraction, vip = false) {
   return t;
 }
 
-function setNight(world, time, { coins, served, missed, combo, bestCombo, vipServed = 0 }) {
-  Object.assign(world.shift, { time, coins, served, missed, combo, bestCombo, vipServed, hearts: 5 - missed, nextTicket: 999 });
+function setNight(world, time, { coins, served, missed, combo, bestCombo, vipServed = 0, perfects = 0 }) {
+  Object.assign(world.shift, { time, coins, served, missed, combo, bestCombo, vipServed, perfects, hearts: 5 - missed, nextTicket: 999 });
   world.shift.lastPhase = phaseIndex(world.shift);
 }
 
@@ -101,7 +101,7 @@ function stageService(world, fx) {
   startCooking(world, 'noodles', 'pot-a', 3.6);
   startCooking(world, 'egg', 'pot-b', 8);
   startCooking(world, 'pork', 'griddle-a', 2.4);
-  startCooking(world, 'tofu', 'griddle-b', 4.8);
+  startCooking(world, 'tofu', 'griddle-b', 8.2);
   // The chef at the island board, mid-way through the scallions for the Lantern Ramen.
   work(world, 'crate-scallion');
   const board = work(world, 'board-c');
@@ -110,7 +110,7 @@ function stageService(world, fx) {
   world.chef.walk = 0.6;
   // A Lantern Ramen just went out through the pass.
   world.events.length = 0;
-  setNight(world, 118, { coins: 236, served: 8, missed: 1, combo: 3, bestCombo: 4, vipServed: 1 });
+  setNight(world, 118, { coins: 236, served: 8, missed: 1, combo: 3, bestCombo: 4, vipServed: 1, perfects: 5 });
   ticket(world, 'lantern', 0.34);
   ticket(world, 'ember', 0.52, true);
   ticket(world, 'grove', 0.74);
@@ -164,7 +164,7 @@ function stageLastCall(world, fx) {
 /** The end of the Lantern Festival: a strong two-star night that opens the critic's night. */
 function stageResults(world) {
   world.reset(3);
-  setNight(world, 240, { coins: 318, served: 12, missed: 1, combo: 0, bestCombo: 4 });
+  setNight(world, 240, { coins: 318, served: 12, missed: 1, combo: 0, bestCombo: 4, perfects: 9 });
   world.shift.over = true;
   const served = [
     ['noodles', 'broth', 'egg', 'scallion'],
