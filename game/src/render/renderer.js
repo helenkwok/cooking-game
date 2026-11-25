@@ -9,7 +9,7 @@ import { heldTag, ticketProgress, usefulStations } from '../hints.js';
 import { drawChef, drawHeldTag } from './chef-view.js';
 import { drawFloaters, drawParticles } from './effects.js';
 import { drawBanner, drawOrderBoard, drawServicePanel } from './hud-view.js';
-import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations } from './kitchen-view.js';
+import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations, drawStringLights } from './kitchen-view.js';
 import { drawPaused, drawResults, drawTitle } from './screens-view.js';
 
 export const SCREEN_TITLE = 'title';
@@ -81,6 +81,7 @@ export function createRenderer(canvas) {
     drawFrontCounter(ctx);
     drawStations(ctx, world.stations, { ...common, sides: ['front'] });
     if (tag !== null) drawHeldTag(ctx, world.chef, tag);
+    drawStringLights(ctx, time, rush);
     drawParticles(ctx, ui.fx);
     drawFloaters(ctx, ui.fx);
     drawOrderBoard(ctx, world.orders, time, ticketProgress(world));

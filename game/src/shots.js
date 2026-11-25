@@ -154,7 +154,7 @@ function stageLastCall(world, fx) {
 }
 
 function stageResults(world) {
-  setNight(world, 240, { coins: 428, served: 16, missed: 1, combo: 0, bestCombo: 6 });
+  setNight(world, 240, { coins: 472, served: 16, missed: 1, combo: 0, bestCombo: 6 });
   world.shift.over = true;
   const served = [
     ['noodles', 'broth', 'egg', 'scallion'],
@@ -164,7 +164,7 @@ function stageResults(world) {
     ['broth', 'egg', 'tofu', 'scallion'],
     ['noodles', 'broth', 'pork', 'egg', 'mushroom', 'scallion'],
   ];
-  return { screen: SCREEN_OVER, time: 0.4, best: 391, servedDishes: served };
+  return { screen: SCREEN_OVER, time: 0.4, best: 431, servedDishes: served };
 }
 
 /** Stage the named scene on `world` (and `fx`); returns { screen, time, best, servedDishes }. */

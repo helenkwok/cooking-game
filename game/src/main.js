@@ -93,6 +93,7 @@ function runGame() {
   let clock = 0;
   let servedDishes = [];
   let warnedLastSeconds = false;
+  let lastTick = 0;
   let mouseChop = null;
 
   function announce(message) {
@@ -104,6 +105,7 @@ function runGame() {
     Object.assign(fx, createEffects());
     servedDishes = [];
     warnedLastSeconds = false;
+    lastTick = 0;
     accumulator = 0;
     screen = SCREEN_PLAY;
     audio.unlock();
@@ -194,6 +196,12 @@ function runGame() {
         if (!warnedLastSeconds && secondsLeft(world.shift) <= 30) {
           warnedLastSeconds = true;
           fx.banner = { message: '30 SECONDS', sub: 'Get those last bowls out!', life: 0 };
+        }
+        // The last ten seconds tick audibly.
+        const whole = Math.ceil(secondsLeft(world.shift));
+        if (whole <= 10 && whole !== lastTick) {
+          lastTick = whole;
+          if (whole > 0) audio.play('tick', whole <= 3);
         }
         drainEvents();
         updateEffects(fx, STEP);

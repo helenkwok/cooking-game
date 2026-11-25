@@ -38,7 +38,7 @@ export const SHIFT = {
   /** Every ticket's patience is the recipe's own times this. */
   patience: 1.15,
   /** Coins needed for one, two and three stars on the results card. */
-  stars: [110, 240, 400],
+  stars: [130, 290, 460],
 };
 
 export const COOK = {

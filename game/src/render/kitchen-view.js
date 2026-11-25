@@ -102,6 +102,42 @@ export function drawIsland(ctx) {
   label(ctx, 'STEAM  LANTERN', x + w / 2, y + h + 10, 11, '#e7b46a');
 }
 
+/** Festoon lights strung over the back counter, swinging a little and glowing warm. */
+export function drawStringLights(ctx, time, rush) {
+  const posts = [24, 230, 436, 640, 844, 1050, 1256];
+  const colours = ['#ffcf6b', '#ff8a5c', '#ffe9a8', '#ff6f6f'];
+  ctx.strokeStyle = 'rgba(30,20,20,0.8)';
+  ctx.lineWidth = 2;
+  let bulb = 0;
+  for (let i = 0; i < posts.length - 1; i += 1) {
+    const a = posts[i];
+    const b = posts[i + 1];
+    const sag = 16 + Math.sin(time * 1.3 + i) * 1.5;
+    ctx.beginPath();
+    ctx.moveTo(a, 146);
+    ctx.quadraticCurveTo((a + b) / 2, 146 + sag * 2, b, 146);
+    ctx.stroke();
+    for (let k = 1; k < 6; k += 1) {
+      const t = k / 6;
+      const x = (1 - t) * (1 - t) * a + 2 * (1 - t) * t * ((a + b) / 2) + t * t * b;
+      const y = 146 + 2 * (1 - t) * t * sag * 2 + 5;
+      const twinkle = rush ? 0.75 + 0.25 * Math.sin(time * 9 + bulb * 1.7) : 0.9;
+      const glow = ctx.createRadialGradient(x, y, 1, x, y, 16);
+      glow.addColorStop(0, `rgba(255,190,110,${0.5 * twinkle})`);
+      glow.addColorStop(1, 'rgba(255,190,110,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - 16, y - 16, 32, 32);
+      ctx.beginPath();
+      ctx.ellipse(x, y, 4, 5.5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = colours[bulb % colours.length];
+      ctx.globalAlpha = twinkle;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      bulb += 1;
+    }
+  }
+}
+
 export function drawFrontCounter(ctx) {
   counterSlab(ctx, 24, 596, 1232, 106, 18);
   // The pass: a gap in the counter through to the dining tent, under a heat lamp.

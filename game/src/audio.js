@@ -14,7 +14,6 @@ export function createAudio() {
   let nextBeat = 0;
   let beat = 0;
   let tempo = 0.36;
-  let sizzle = null;
 
   function ensure() {
     if (ctx !== null) return true;
@@ -124,6 +123,11 @@ export function createAudio() {
       tone(220, t, 0.35, { type: 'triangle', gain: 0.3, bend: 0.55 });
       tone(165, t + 0.18, 0.45, { type: 'triangle', gain: 0.25, bend: 0.55 });
     },
+    tick(last) {
+      // The closing clock: a wooden tock each second, sharper on the final three.
+      const t = ctx.currentTime;
+      tone(last ? 1400 : 900, t, 0.05, { type: 'square', gain: last ? 0.09 : 0.05, bend: 0.7 });
+    },
     refuse() {
       tone(150, ctx.currentTime, 0.12, { type: 'square', gain: 0.07 });
     },
@@ -190,6 +194,5 @@ export function createAudio() {
       return muted;
     },
     tick: scheduleMusic,
-    _sizzle: sizzle,
   };
 }
