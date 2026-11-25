@@ -148,13 +148,13 @@ export function drawStringLights(ctx, time, rush) {
     const b = posts[i + 1];
     const sag = 16 + Math.sin(time * 1.3 + i) * 1.5;
     ctx.beginPath();
-    ctx.moveTo(a, 146);
-    ctx.quadraticCurveTo((a + b) / 2, 146 + sag * 2, b, 146);
+    ctx.moveTo(a, 166);
+    ctx.quadraticCurveTo((a + b) / 2, 166 + sag * 2, b, 166);
     ctx.stroke();
     for (let k = 1; k < 6; k += 1) {
       const t = k / 6;
       const x = (1 - t) * (1 - t) * a + 2 * (1 - t) * t * ((a + b) / 2) + t * t * b;
-      const y = 146 + 2 * (1 - t) * t * sag * 2 + 5;
+      const y = 166 + 2 * (1 - t) * t * sag * 2 + 5;
       const twinkle = rush ? 0.75 + 0.25 * Math.sin(time * 9 + bulb * 1.7) : 0.9;
       const glow = ctx.createRadialGradient(x, y, 1, x, y, 16);
       glow.addColorStop(0, `rgba(255,190,110,${0.5 * twinkle})`);
@@ -174,6 +174,17 @@ export function drawStringLights(ctx, time, rush) {
 
 export function drawFrontCounter(ctx) {
   counterSlab(ctx, 24, 596, 1232, 106, 18);
+  // The diners' side, yatai style: a red lacquer ledge with a steel lip over a reed-slat front.
+  ctx.fillStyle = '#a8231d';
+  ctx.fillRect(0, 688, 1280, 14);
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillRect(0, 689, 1280, 3);
+  ctx.fillStyle = '#c7ced3';
+  ctx.fillRect(0, 700, 1280, 4);
+  ctx.fillStyle = '#9a7a4e';
+  ctx.fillRect(0, 704, 1280, 16);
+  ctx.fillStyle = 'rgba(70,45,20,0.45)';
+  for (let x = 0; x < 1280; x += 7) ctx.fillRect(x, 704, 2, 16);
   // The pass: a gap in the counter through to the dining tent, under a heat lamp.
   roundRect(ctx, 830, 596, 236, 110, 8, '#3a2531');
   const lamp = ctx.createRadialGradient(948, 640, 10, 948, 640, 140);

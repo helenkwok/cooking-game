@@ -51,6 +51,14 @@ export function applyEvents(fx, events, orders) {
         floater(fx, e.x, e.y - 40, 'Chopped!', '#c5f5b0', 18);
         burst(fx, e.x, e.y, 10, ['#fff7c2', '#ffffff'], 180, 300, 0.5, 4);
         break;
+      case 'pickup':
+        // Lifting food out of a pot: a billow of steam and a flick of drops, the cart's little show.
+        if (e.station && e.station.startsWith('pot')) {
+          burst(fx, e.x, e.y - 10, 16, ['rgba(255,255,255,0.85)', 'rgba(240,240,240,0.7)'], 90, -160, 0.9, 10);
+          burst(fx, e.x, e.y, 10, ['#cfe9ff', '#ffffff'], 260, 900, 0.5, 3.5);
+          if (e.kind === 'noodles') floater(fx, e.x - 60, e.y - 60, 'Noodles up!', '#ffe9a8', 17);
+        }
+        break;
       case 'splash':
         burst(fx, e.x, e.y, 14, ['#cfe9ff', '#ffffff', '#9cc7e6'], 200, 700, 0.5, 5);
         break;

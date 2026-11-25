@@ -29,7 +29,7 @@ function box(ctx, x, w, title) {
 
 function drawHands(ctx, world) {
   const x = STATUS_BAR.x;
-  const w = 300;
+  const w = 280;
   box(ctx, x, w, 'IN HAND');
   const held = world.chef.held;
   const y = STATUS_BAR.y + 44;
@@ -46,8 +46,8 @@ function drawHands(ctx, world) {
 }
 
 function drawNextUp(ctx, world) {
-  const x = STATUS_BAR.x + 308;
-  const w = 430;
+  const x = STATUS_BAR.x + 288;
+  const w = 420;
   box(ctx, x, w, 'NEXT UP');
   const next = nextUp(world);
   const y = STATUS_BAR.y + 44;
@@ -75,8 +75,8 @@ function drawNextUp(ctx, world) {
 }
 
 function drawControls(ctx) {
-  const x = STATUS_BAR.x + 746;
-  const w = STATUS_BAR.w - 746;
+  const x = STATUS_BAR.x + 716;
+  const w = STATUS_BAR.w - 716;
   box(ctx, x, w, 'CONTROLS');
   const y = STATUS_BAR.y + 35;
   text(ctx, 'WASD / click: walk · Space: work', x + 12, y, 11.5, PALETTE.text, 'left', 'normal');

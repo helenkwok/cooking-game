@@ -325,6 +325,47 @@ function drawToppings(ctx, contents, x, y, r) {
 }
 
 /**
+ * Each soup has its own broth, so dishes read apart at a glance: a creamy pork-bone white for the
+ * six-topping feast, miso orange where mushrooms go in, a clear golden salt broth where tofu goes
+ * in without noodles, dark soy for the rest, and a red chili-oil glaze for dry noodles.
+ */
+function brothStyle(contents) {
+  if (!contents.includes('broth')) return contents.includes('chili') ? { soup: '#9b2b1e', fat: '#d8573a' } : { soup: '#e9d9bf', fat: '#f6ead2' };
+  if (contents.includes('pork') && contents.includes('mushroom')) return { soup: '#efe2c8', fat: '#fff6e4' };
+  if (contents.includes('mushroom')) return { soup: '#c8803a', fat: '#eab070' };
+  if (contents.includes('tofu') && !contents.includes('noodles')) return { soup: '#e9c766', fat: '#fff0a8' };
+  return { soup: '#8a4a22', fat: '#c98a4a' };
+}
+
+/** A sheet of nori tucked against the rim. */
+function drawNori(ctx, x, y, r) {
+  ctx.save();
+  ctx.translate(x - r * 0.52, y - r * 0.18);
+  ctx.rotate(-0.35);
+  ctx.fillStyle = '#1f2e22';
+  ctx.fillRect(-r * 0.16, -r * 0.34, r * 0.32, r * 0.62);
+  ctx.fillStyle = 'rgba(120,160,110,0.35)';
+  ctx.fillRect(-r * 0.12, -r * 0.3, r * 0.06, r * 0.54);
+  ctx.restore();
+}
+
+/** Red pickled ginger and a scatter of sesame, as a ramen cart finishes a bowl. */
+function drawGarnish(ctx, x, y, r) {
+  ctx.strokeStyle = '#e8414a';
+  ctx.lineWidth = r * 0.05;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 4; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(x + r * (0.12 + i * 0.05), y - r * 0.12);
+    ctx.lineTo(x + r * (0.2 + i * 0.05), y - r * 0.02);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 9; i += 1) {
+    ellipse(ctx, x + (jitter(i + 21) - 0.5) * r * 0.9, y + (jitter(i + 37) - 0.5) * r * 0.8, r * 0.025, r * 0.016, '#f8f0dc');
+  }
+}
+
+/**
  * A dish seen from above at radius r: a glazed bowl on its saucer for noodle and soup dishes, a
  * plate for the rest, an empty serving board when there is nothing in it yet.
  */
@@ -351,15 +392,17 @@ export function drawDish(ctx, contents, x, y, r, { glow = null, steam = 0 } = {}
       const a = (i / 12) * TAU;
       ellipse(ctx, x + Math.cos(a) * r * 0.965, y + Math.sin(a) * r * 0.885, r * 0.05, r * 0.035, '#f6e7c8');
     }
-    const soup = contents.includes('broth') ? '#d8913a' : contents.includes('chili') ? '#9b2b1e' : '#e9d9bf';
-    ellipse(ctx, x, y, r * 0.82, r * 0.75, soup);
+    const style = brothStyle(contents);
+    ellipse(ctx, x, y, r * 0.82, r * 0.75, style.soup);
     if (contents.includes('broth')) {
-      ellipse(ctx, x - r * 0.25, y - r * 0.3, r * 0.08, r * 0.05, '#f3c26b');
-      ellipse(ctx, x + r * 0.3, y + r * 0.1, r * 0.06, r * 0.04, '#f3c26b');
-      ellipse(ctx, x - r * 0.05, y + r * 0.35, r * 0.05, r * 0.035, '#f3c26b');
+      ellipse(ctx, x - r * 0.25, y - r * 0.3, r * 0.08, r * 0.05, style.fat);
+      ellipse(ctx, x + r * 0.3, y + r * 0.1, r * 0.06, r * 0.04, style.fat);
+      ellipse(ctx, x - r * 0.05, y + r * 0.35, r * 0.05, r * 0.035, style.fat);
     }
     if (contents.includes('noodles')) drawNoodleSwirl(ctx, x, y, r * 0.48);
+    if (contents.includes('broth') && contents.includes('noodles') && contents.includes('egg')) drawNori(ctx, x, y, r);
     drawToppings(ctx, contents, x, y, r * 0.8);
+    if (contents.includes('broth') && contents.includes('noodles')) drawGarnish(ctx, x, y, r);
   } else {
     ellipse(ctx, x, y, r * 1.08, r * 0.98, '#d9d2c4');
     ellipse(ctx, x, y - r * 0.02, r * 1.04, r * 0.94, '#fbf8f1');

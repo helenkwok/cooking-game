@@ -117,6 +117,97 @@ export function drawTipJar(ctx, x, y, coins) {
   ctx.fillText('TIPS', x, y + 12.5);
 }
 
+/** A red paper lantern (chochin) hanging from the valance, with a warm glow. */
+function drawChochin(ctx, x, y, time) {
+  const sway = Math.sin(time * 1.3 + x) * 0.05;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(sway);
+  const glow = ctx.createRadialGradient(0, 30, 6, 0, 30, 80);
+  glow.addColorStop(0, 'rgba(255,120,60,0.5)');
+  glow.addColorStop(1, 'rgba(255,120,60,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(-80, -50, 160, 160);
+  ctx.fillStyle = '#2b1d22';
+  ctx.fillRect(-12, 0, 24, 6);
+  ellipse(ctx, 0, 32, 24, 28, '#d8322a');
+  ctx.strokeStyle = 'rgba(120,20,15,0.55)';
+  ctx.lineWidth = 1.5;
+  for (let i = 1; i < 6; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(-24 + i * 0.4, 6 + i * 9.5);
+    ctx.quadraticCurveTo(0, 10 + i * 9.5, 24 - i * 0.4, 6 + i * 9.5);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#2b1d22';
+  ctx.fillRect(-12, 58, 24, 6);
+  ctx.font = `bold 15px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#fff3d6';
+  ctx.fillText('湯', 0, 32);
+  ctx.restore();
+}
+
+/**
+ * The stall's noren valance across the top: red cloth with a white wave band and a scalloped hem,
+ * the stall's name in the middle, and a paper lantern at each end.
+ */
+export function drawNoren(ctx, time) {
+  const top = 146;
+  ctx.fillStyle = '#b8261f';
+  ctx.fillRect(20, top, 1240, 18);
+  ctx.strokeStyle = 'rgba(255,245,230,0.85)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let x = 20; x <= 1260; x += 4) {
+    const y = top + 9 + Math.sin(x / 14) * 3;
+    if (x === 20) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  // Scalloped hem.
+  ctx.fillStyle = '#b8261f';
+  for (let x = 20; x < 1260; x += 40) {
+    ctx.beginPath();
+    ctx.arc(x + 20, top + 18, 20, 0, Math.PI);
+    ctx.fill();
+  }
+  // The name panel.
+  ctx.beginPath();
+  ctx.roundRect(520, top, 240, 34, [0, 0, 10, 10]);
+  ctx.fillStyle = '#8f1c17';
+  ctx.fill();
+  ctx.font = `bold 17px ${FONT}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#fff3d6';
+  ctx.fillText('STEAM  LANTERN  ラーメン', 640, top + 17);
+  drawChochin(ctx, 44, top + 4, time);
+  drawChochin(ctx, 1236, top + 4, time);
+}
+
+/** Condiments on the counter by the diners: a tub of red pickled ginger and a cup of chopsticks. */
+export function drawCondiments(ctx, x, y) {
+  ctx.beginPath();
+  ctx.roundRect(x - 22, y - 16, 44, 32, 6);
+  ctx.fillStyle = 'rgba(235,240,245,0.75)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(x - 19, y - 13, 38, 18, 4);
+  ctx.fillStyle = '#e8414a';
+  ctx.fill();
+  ctx.strokeStyle = '#ff9aa0';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 6; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(x - 15 + i * 6, y - 10);
+    ctx.lineTo(x - 12 + i * 6, y);
+    ctx.stroke();
+  }
+  drawChopstickCup(ctx, x + 40, y + 6);
+}
+
 /** Darkens the stage's edges a little, so the eye goes to the kitchen's middle. */
 export function drawVignette(ctx) {
   const v = ctx.createRadialGradient(640, 400, 380, 640, 400, 860);
