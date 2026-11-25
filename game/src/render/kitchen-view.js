@@ -455,9 +455,24 @@ function drawPass(ctx, s, time, display) {
 }
 
 /** Every station, with the one the chef can reach and the one under the mouse outlined. */
+/** A soft shadow under a station, so it sits on the counter rather than being painted on it. */
+function drawContactShadow(ctx, s) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(45,20,8,0.55)';
+  ctx.shadowBlur = 14;
+  ctx.shadowOffsetY = 7;
+  ctx.fillStyle = 'rgba(70,35,15,0.35)';
+  ctx.beginPath();
+  if (s.type === POT) ctx.arc(s.cx, s.cy, 38, 0, TAU);
+  else ctx.roundRect(s.x + 10, s.y + 10, s.w - 20, s.h - 18, 10);
+  ctx.fill();
+  ctx.restore();
+}
+
 export function drawStations(ctx, stations, { time, reach, hover, knives, wanted, passDisplay, sides, useful }) {
   for (const s of stations) {
     if (!sides.includes(s.side)) continue;
+    if (s.type !== PASS) drawContactShadow(ctx, s);
     switch (s.type) {
       case CRATE: drawCrate(ctx, s, time); break;
       case BOARD: drawBoard(ctx, s, time, knives[s.id] ?? 0); break;
