@@ -81,7 +81,7 @@ export function createRenderer(canvas) {
     if (tag !== null) drawHeldTag(ctx, world.chef, tag);
     drawStringLights(ctx, time, rush);
     drawNoren(ctx, time);
-    drawVignette(ctx);
+    drawVignette(ctx, time);
     drawParticles(ctx, ui.fx);
     drawFloaters(ctx, ui.fx, false);
     ctx.restore();

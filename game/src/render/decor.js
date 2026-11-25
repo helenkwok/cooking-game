@@ -209,7 +209,44 @@ export function drawCondiments(ctx, x, y) {
 }
 
 /** Darkens the stage's edges a little, so the eye goes to the kitchen's middle. */
-export function drawVignette(ctx) {
+/** Where the stall's light falls (kitchen coordinates): x, y, reach, strength. */
+const LIGHTS = [[640, 400, 430, 1], [640, 210, 520, 0.8], [948, 650, 230, 1], [1172, 400, 230, 0.9], [100, 390, 210, 0.8], [36, 180, 160, 1], [1244, 180, 160, 1]];
+let nightShade = null;
+
+/** Night falls round the stall: a dusk tint with pools of lantern light cut out of it (drawn once). */
+function shadeLayer() {
+  if (nightShade !== null || typeof document === 'undefined') return nightShade;
+  nightShade = document.createElement('canvas');
+  nightShade.width = 1280;
+  nightShade.height = 800;
+  const g = nightShade.getContext('2d');
+  g.fillStyle = 'rgba(20,8,34,0.5)';
+  g.fillRect(0, 0, 1280, 800);
+  g.globalCompositeOperation = 'destination-out';
+  for (const [x, y, r, a] of LIGHTS) {
+    const hole = g.createRadialGradient(x, y, r * 0.15, x, y, r);
+    hole.addColorStop(0, `rgba(0,0,0,${a})`);
+    hole.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = hole;
+    g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  return nightShade;
+}
+
+export function drawVignette(ctx, time = 0) {
+  const shade = shadeLayer();
+  if (shade !== null) ctx.drawImage(shade, 0, 0);
+  // The lanterns' warm glow, breathing a little.
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (const [x, y, r, a] of LIGHTS) {
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 0.7);
+    glow.addColorStop(0, `rgba(255,150,60,${0.07 * a * (0.9 + 0.1 * Math.sin(time * 2 + x))})`);
+    glow.addColorStop(1, 'rgba(255,150,60,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.restore();
   const v = ctx.createRadialGradient(640, 400, 380, 640, 400, 860);
   v.addColorStop(0, 'rgba(20,8,20,0)');
   v.addColorStop(1, 'rgba(20,8,20,0.38)');

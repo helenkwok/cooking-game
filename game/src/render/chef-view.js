@@ -18,9 +18,11 @@ export function drawChef(ctx, chef, time) {
   const bob = chef.moving ? Math.abs(Math.sin(chef.walk)) * 4 : Math.sin(chef.bob * 2.5) * 1.2;
   const x = chef.x;
   const y = chef.y;
-  ellipse(ctx, x, y + 4, 28, 11, 'rgba(0,0,0,0.3)');
+  ellipse(ctx, x, y + 4, 34, 13, 'rgba(0,0,0,0.3)');
   ctx.save();
   ctx.translate(x, y - bob);
+  // Drawn a size up, from the feet, so the cook reads as the star of the stall.
+  ctx.scale(1.22, 1.22);
   // Feet.
   ellipse(ctx, -10 + step * 4, -2, 9, 6, '#2b2020');
   ellipse(ctx, 10 - step * 4, -2, 9, 6, '#2b2020');
