@@ -123,7 +123,7 @@ export function drawTitle(ctx, time, progress, selected) {
   const lines = [
     ['Move', 'WASD / arrow keys, or click a station to walk there; 1–8 walk to a crate'],
     ['Work', 'Space or E: pick up, put down, plate, serve · hold Space (or the mouse) to chop'],
-    ['Prep', 'Chop on a board, boil in a pot, sear on the griddle: stoves cook on their own and burn if you wander'],
+    ['Prep', 'Chop, boil, sear: stoves cook on their own. Pull at the gold glow for PERFECT; wander and it burns'],
     ['Serve', 'Build the dish on a mat and carry it to the PASS before the ticket runs out · Q bins · P pauses'],
   ];
   lines.forEach(([head, body], i) => {

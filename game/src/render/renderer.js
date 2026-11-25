@@ -113,8 +113,8 @@ export function createRenderer(canvas) {
     drawKitchen(world, ui, playing);
     drawOrderBoard(ctx, world.orders, ui.time, ticketProgress(world));
     drawServicePanel(ctx, world.shift, ui.time, ui.fx.coinPulse);
-    drawSidebar(ctx, world, ui.progress, ui.time);
-    drawStatusBar(ctx, world);
+    drawSidebar(ctx, world, ui.progress);
+    drawStatusBar(ctx);
     drawFloaters(ctx, ui.fx, true);
     if (ui.fx.banner !== null && playing) drawBanner(ctx, ui.fx.banner.message, ui.fx.banner.sub, ui.fx.banner.life);
 

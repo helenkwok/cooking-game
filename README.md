@@ -19,8 +19,8 @@ Tickets clip onto the order board, and each one is a dish with a patience bar. T
 - **6 dishes from 8 ingredients**: Lantern Ramen, Ember Noodles, Grove Broth, Griddle Plate, Moon Soup and the six-topping Midnight Feast. The same prepped ingredients combine into different dishes.
 - **Each night runs in three phases**: Evening, Night Rush and Last Call. Tickets come faster and new dishes join the menu, but there are no extra chores.
 - **The stall explains itself**:
-  - a sidebar shows your campaign, the live state of every burner and a kitchen key;
-  - a status bar shows what you hold and what it needs next, and what the most urgent ticket still lacks;
+  - a sidebar shows your campaign, the most urgent ticket and what its dish still lacks, what you hold and what it needs next, and a kitchen key;
+  - a strip under the kitchen keeps the controls in view;
   - stations where your food can go are outlined;
   - dishes on the mats show their progress ("Lantern Ramen 3/4", "READY").
 - **Tips for speed and combos for streaks**. You get five hearts, and a customer who walks out costs one. Each night has its own stars and best score.
