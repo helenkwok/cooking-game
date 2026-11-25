@@ -102,7 +102,7 @@ function stageService(world, fx) {
   startCooking(world, 'noodles', 'pot-a', 3.6);
   startCooking(world, 'egg', 'pot-b', 8);
   startCooking(world, 'pork', 'griddle-a', 2.4);
-  startCooking(world, 'tofu', 'griddle-b', 8.2);
+  startCooking(world, 'tofu', 'griddle-b', 10);
   // The chef at the island board, mid-way through the scallions for the Lantern Ramen.
   work(world, 'crate-scallion');
   const board = work(world, 'board-c');
@@ -116,7 +116,7 @@ function stageService(world, fx) {
   ticket(world, 'ember', 0.52, true);
   ticket(world, 'grove', 0.74);
   ticket(world, 'griddle', 0.9);
-  ticket(world, 'moon', 1);
+  ticket(world, 'soyegg', 1);
   world.events.push({ type: 'serve', x: 948, y: 650, earned: 38, tip: 12, bonus: 4, combo: 3, contents: ['broth', 'noodles', 'egg', 'scallion'] });
   world.events.push({ type: 'chop', x: board.cx, y: board.cy, station: board.id, kind: 'scallion', stroke: 3 });
   applyEvents(fx, world.events, world.orders);
@@ -156,7 +156,7 @@ function stageLastCall(world, fx) {
   setNight(world, 214, { coins: 371, served: 13, missed: 2, combo: 5, bestCombo: 5 });
   ticket(world, 'feast', 0.22);
   ticket(world, 'moon', 0.41);
-  ticket(world, 'grove', 0.63);
+  ticket(world, 'bites', 0.63);
   // An Ember Noodles just went out: its ticket lifts away and its diner beams.
   const served = ticket(world, 'ember', 0.8);
   served.served = true;

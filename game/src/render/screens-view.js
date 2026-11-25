@@ -105,12 +105,16 @@ export function drawTitle(ctx, time, progress, selected) {
   ctx.restore();
   text(ctx, 'a night-market noodle stall · 5 nights · 5 stall upgrades', 640, 152, 18, '#f6d7b0', 'center', 'italic bold');
 
-  // The menu: six dishes from eight ingredients.
+  // The menu: six dishes and two sides from eight ingredients.
   roundRect(ctx, 130, 198, 1020, 160, 14, 'rgba(246,236,216,0.96)');
-  text(ctx, 'THE MENU: SIX DISHES FROM EIGHT INGREDIENTS', 640, 216, 14, PALETTE.inkSoft);
+  text(ctx, 'THE MENU: SIX DISHES AND TWO SIDES FROM EIGHT INGREDIENTS', 640, 216, 14, PALETTE.inkSoft);
   RECIPES.forEach((recipe, i) => {
-    const x = 215 + i * 170;
-    drawDish(ctx, recipe.items, x, 268, 30, { steam: time + i });
+    const x = 196 + i * 127;
+    drawDish(ctx, recipe.items, x, 268, recipe.side ? 24 : 29, { steam: time + i });
+    if (recipe.side) {
+      roundRect(ctx, x - 20, 232, 40, 15, 4, '#7d3a28');
+      text(ctx, 'SIDE', x, 240, 10, '#fff3d6');
+    }
     text(ctx, recipe.name, x, 314, 14, PALETTE.ink);
     recipe.items.forEach((kind, k) => drawIngredientIcon(ctx, kind, x - (recipe.items.length - 1) * 11 + k * 22, 338, 22));
   });

@@ -35,6 +35,9 @@ export const RECIPES = [
   { id: 'griddle', name: 'Griddle Plate', items: ['tofu', 'mushroom', 'chili'], price: 20, patience: 62, unlock: 70, hue: '#c0763b' },
   { id: 'moon', name: 'Moon Soup', items: ['broth', 'egg', 'tofu', 'scallion'], price: 24, patience: 66, unlock: 110, hue: '#8fb8de' },
   { id: 'feast', name: 'Midnight Feast', items: ['noodles', 'broth', 'pork', 'egg', 'mushroom', 'scallion'], price: 44, patience: 98, unlock: 150, hue: '#b07cd8' },
+  // Sides: quick little plates from two ingredients, cheap and impatient, slotted between bowls.
+  { id: 'bites', name: 'Tofu Bites', items: ['tofu', 'chili'], price: 12, patience: 46, unlock: 0, hue: '#d9822b', side: true },
+  { id: 'soyegg', name: 'Soy Egg', items: ['egg', 'scallion'], price: 11, patience: 44, unlock: 0, hue: '#c9a227', side: true },
 ];
 
 export const RECIPE_BY_ID = Object.fromEntries(RECIPES.map((recipe) => [recipe.id, recipe]));

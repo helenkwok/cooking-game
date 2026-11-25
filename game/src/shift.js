@@ -77,7 +77,7 @@ export function chooseRecipe(shift, random, lastId) {
   let total = 0;
   const weights = menu.map((recipe) => {
     const fresh = freshWindow && shift.night.late.includes(recipe.id) ? 1.8 : 1;
-    const weight = (recipe.id === lastId ? 0.35 : 1) * fresh;
+    const weight = (recipe.id === lastId ? 0.35 : 1) * fresh * (recipe.side ? 0.55 : 1);
     total += weight;
     return weight;
   });

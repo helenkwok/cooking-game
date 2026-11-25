@@ -14,22 +14,22 @@ export const NIGHTS = [
   },
   {
     id: 2, name: 'Rainy Night', blurb: 'Fewer customers, but they all want soup.',
-    seconds: 200, menu: ['lantern', 'grove', 'moon'], late: ['ember'], lateAt: 0.5,
+    seconds: 200, menu: ['lantern', 'grove', 'moon', 'soyegg'], late: ['ember'], lateAt: 0.5,
     spawnStart: 30, spawnEnd: 18, patience: 1.45, special: 'grove', twist: TWIST_RAIN, stars: [110, 250, 370],
   },
   {
     id: 3, name: 'Lantern Festival', blurb: 'The street fills up: a long, loud rush.',
-    seconds: 240, menu: ['lantern', 'ember', 'grove'], late: ['griddle', 'moon'], lateAt: 0.3,
+    seconds: 240, menu: ['lantern', 'ember', 'grove', 'bites'], late: ['griddle', 'moon', 'soyegg'], lateAt: 0.3,
     spawnStart: 25, spawnEnd: 11.5, patience: 1.12, special: 'lantern', twist: TWIST_FESTIVAL, stars: [120, 260, 390],
   },
   {
     id: 4, name: 'The Food Critic', blurb: 'Gold VIP tickets pay double, and wait half as long.',
-    seconds: 240, menu: ['lantern', 'ember', 'grove', 'griddle'], late: ['moon', 'feast'], lateAt: 0.45,
+    seconds: 240, menu: ['lantern', 'ember', 'grove', 'griddle', 'bites', 'soyegg'], late: ['moon', 'feast'], lateAt: 0.45,
     spawnStart: 26, spawnEnd: 12.5, patience: 1.15, special: 'griddle', twist: TWIST_CRITIC, stars: [130, 300, 440],
   },
   {
     id: 5, name: 'Midnight Market', blurb: 'Every dish, the fastest crowd. Good luck.',
-    seconds: 240, menu: ['lantern', 'ember', 'grove', 'griddle', 'moon'], late: ['feast'], lateAt: 0.25,
+    seconds: 240, menu: ['lantern', 'ember', 'grove', 'griddle', 'moon', 'bites', 'soyegg'], late: ['feast'], lateAt: 0.25,
     spawnStart: 21, spawnEnd: 10, patience: 1.02, special: 'feast', twist: null, stars: [130, 270, 400],
   },
 ];
