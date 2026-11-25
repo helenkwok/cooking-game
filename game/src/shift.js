@@ -94,9 +94,14 @@ export function rollVip(shift, random) {
   return shift.night.twist === TWIST_CRITIC && shift.time > 20 && random() < 0.22;
 }
 
-/** A ticket's price: doubled for a VIP, half again for tonight's special. */
+/** A ticket's price: doubled for a VIP, half again for tonight's special, a packing fee to go. */
 export function priceOf(ticket) {
-  return Math.round(ticket.recipe.price * (ticket.vip ? 2 : 1) * (ticket.special ? 1.5 : 1));
+  return Math.round(ticket.recipe.price * (ticket.vip ? 2 : 1) * (ticket.special ? 1.5 : 1)) + (ticket.takeaway ? 4 : 0);
+}
+
+/** From night 2, once the rush starts, some orders are to go: a rider waits, a little longer. */
+export function rollTakeaway(shift, random) {
+  return shift.night.id >= 2 && shiftProgress(shift) >= 0.31 && random() < 0.25;
 }
 
 /** Pay for a served ticket: price (doubled for a VIP), a tip for speed and the combo bonus. */

@@ -6,7 +6,7 @@ import { createChef, moveChef, resetChef, stationInReach } from './chef.js';
 import { chopAt, interact, updateCookers } from './kitchen.js';
 import { addTicket, createOrders, fillTicket, openTickets, ticketFor, updateTickets } from './orders.js';
 import { matchRecipe } from './recipes.js';
-import { chooseRecipe, createShift, loseHeart, patienceScale, payForServe, phaseIndex, rollVip, ticketInterval } from './shift.js';
+import { chooseRecipe, createShift, loseHeart, patienceScale, payForServe, phaseIndex, rollTakeaway, rollVip, ticketInterval } from './shift.js';
 import { BOARD, createStations } from './stations.js';
 
 export function createWorld(random, nightId = 1) {
@@ -46,7 +46,7 @@ export function createWorld(random, nightId = 1) {
     }
     fillTicket(ticket);
     const pay = payForServe(world.shift, ticket);
-    world.events.push({ type: 'serve', x: s.cx, y: s.cy, ticket: ticket.id, recipe: ticket.recipe.id, contents: [...contents], ...pay, combo: world.shift.combo, vip: ticket.vip });
+    world.events.push({ type: 'serve', x: s.cx, y: s.cy, ticket: ticket.id, recipe: ticket.recipe.id, contents: [...contents], ...pay, combo: world.shift.combo, vip: ticket.vip, takeaway: ticket.takeaway === true });
     return true;
   };
 
@@ -107,7 +107,12 @@ export function createWorld(random, nightId = 1) {
         world.lastRecipe = recipe.id;
         const ticket = addTicket(world.orders, recipe, patienceScale(shift), rollVip(shift, world.random));
         ticket.special = recipe.id === shift.night.special;
-        world.events.push({ type: 'ticket', ticket: ticket.id, recipe: recipe.id, vip: ticket.vip, x: 0, y: 0 });
+        if (!ticket.vip && rollTakeaway(shift, world.random)) {
+          ticket.takeaway = true;
+          ticket.patience *= 1.3;
+          ticket.left = ticket.patience;
+        }
+        world.events.push({ type: 'ticket', ticket: ticket.id, recipe: recipe.id, vip: ticket.vip, takeaway: ticket.takeaway === true, x: 0, y: 0 });
       }
       shift.nextTicket = ticketInterval(shift) * (0.85 + world.random() * 0.3);
     }

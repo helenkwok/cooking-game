@@ -140,14 +140,70 @@ function drawDiner(ctx, x, ticket, mood, t, time) {
  * The stools and the diners for the tickets on the rail. `orders.tickets` holds the waiting
  * tickets and the ones leaving (served or walked out) for their last moment.
  */
+/** A delivery rider on a red scooter with a lantern box; waits, then rides off with the bag. */
+function drawRider(ctx, x, y, ticket, time, away) {
+  const urgent = ticket.leaving === 0 && ticket.left / ticket.patience < 0.25;
+  ctx.save();
+  ctx.globalAlpha = ticket.served ? 1 - away * 0.6 : 1 - away;
+  ctx.translate(x + (urgent ? Math.sin(time * 18) * 1.5 : 0), y);
+  // Wheels and body.
+  for (const wx of [-30, 30]) {
+    ellipse(ctx, wx, 2, 12, 12, '#1c1c22');
+    ellipse(ctx, wx, 2, 5, 5, '#8a8f99');
+  }
+  ctx.beginPath();
+  ctx.moveTo(-40, -6);
+  ctx.quadraticCurveTo(-34, -30, -6, -26);
+  ctx.lineTo(24, -26);
+  ctx.quadraticCurveTo(44, -24, 42, -4);
+  ctx.closePath();
+  ctx.fillStyle = '#c9372f';
+  ctx.fill();
+  ctx.fillStyle = '#e8e1d2';
+  ctx.fillRect(28, -46, 4, 22);
+  // The delivery box with the stall's lantern on it.
+  ctx.beginPath();
+  ctx.roundRect(-44, -60, 34, 30, 4);
+  ctx.fillStyle = '#f2a541';
+  ctx.fill();
+  ellipse(ctx, -27, -45, 7, 9, '#c9372f');
+  // The rider: jacket, helmet, and the bag once it's handed over.
+  ellipse(ctx, 2, -44, 13, 17, '#2f6fb0');
+  ellipse(ctx, 4, -66, 11, 11, '#f2c49b');
+  ctx.beginPath();
+  ctx.arc(4, -69, 12, Math.PI, 0);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.fillStyle = '#2f6fb0';
+  ctx.fillRect(-8, -71, 24, 4);
+  if (ticket.served) {
+    ctx.beginPath();
+    ctx.roundRect(14, -46, 16, 18, 3);
+    ctx.fillStyle = '#d9b48a';
+    ctx.fill();
+  } else if (urgent) {
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = PALETTE.bad;
+    ctx.fillText('!', 24, -74);
+  }
+  ctx.restore();
+}
+
 export function drawDiners(ctx, orders, time) {
   const taken = new Set();
   orders.tickets.forEach((ticket, index) => {
     if (index < SEATS.length) taken.add(index);
   });
   SEATS.forEach((x, i) => drawStool(ctx, x, !taken.has(i)));
+  // Takeaway orders: a delivery rider waits on a scooter at the end of the counter.
+  const riders = orders.tickets.filter((ticket) => ticket.takeaway);
+  riders.forEach((ticket, i) => {
+    const away = ticket.leaving > 0 ? Math.min(1, ticket.leaving / 0.6) : 0;
+    drawRider(ctx, 1196 + i * 22 + (ticket.served ? away * 140 : 0), STREET_Y + 2 - i * 4, ticket, time, away);
+  });
   orders.tickets.forEach((ticket, index) => {
-    if (index >= SEATS.length) return;
+    if (index >= SEATS.length || ticket.takeaway) return;
     const x = SEATS[index];
     let mood = 'waiting';
     let t = 0;

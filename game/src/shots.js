@@ -114,7 +114,8 @@ function stageService(world, fx) {
   setNight(world, 118, { coins: 236, served: 8, missed: 1, combo: 3, bestCombo: 4, vipServed: 1, perfects: 5 });
   ticket(world, 'lantern', 0.34);
   ticket(world, 'ember', 0.52, true);
-  ticket(world, 'grove', 0.74);
+  const toGo = ticket(world, 'grove', 0.74);
+  toGo.takeaway = true;
   ticket(world, 'griddle', 0.9);
   ticket(world, 'soyegg', 1);
   world.events.push({ type: 'serve', x: 948, y: 650, earned: 38, tip: 12, bonus: 4, combo: 3, contents: ['broth', 'noodles', 'egg', 'scallion'] });

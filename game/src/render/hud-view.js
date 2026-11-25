@@ -98,6 +98,11 @@ function drawTicket(ctx, ticket, x, y, time, have) {
   roundRect(ctx, 8, TICKET.height - 20, Math.max(6, (TICKET.width - 16) * fraction), 12, 6, patienceColour(fraction));
   text(ctx, `${Math.ceil(ticket.left)}s`, TICKET.width - 12, TICKET.height - 33, 12, urgent ? PALETTE.bad : PALETTE.inkSoft, 'right');
   text(ctx, `${priceOf(ticket)}c`, 12, TICKET.height - 33, 12, ticket.vip || ticket.special ? '#b8860b' : PALETTE.inkSoft, 'left');
+  if (ticket.takeaway) {
+    // To go: a blue tag and a paper bag under the dish.
+    roundRect(ctx, 6, 31, 50, 16, 4, '#2f6fb0');
+    text(ctx, 'TO GO', 31, 39.5, 10.5, '#ffffff');
+  }
   if (ticket.special) {
     // Tonight's special: a red ribbon across the corner.
     ctx.save();

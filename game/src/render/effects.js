@@ -90,6 +90,7 @@ export function applyEvents(fx, events, orders) {
         if (e.tip > 0) floater(fx, e.x + 96, e.y - 34, `tip +${e.tip}`, '#ffe9a8', 20, false, 1.4);
         if (e.combo > 1) floater(fx, e.x - 100, e.y - 34, `COMBO x${e.combo}!`, '#8ff0a4', e.combo >= 3 ? 26 : 21, false, 1.4);
         if (e.vip) floater(fx, e.x, e.y - 124, '★ CRITIC SERVED · DOUBLE PAY!', PALETTE.coin, 26, false, 1.6);
+        if (e.takeaway) floater(fx, e.x, e.y - 124, 'Bagged to go! +4', '#9fd0ff', 24, false, 1.5);
         burst(fx, e.x, e.y - 10, 34 + 6 * e.combo, [PALETTE.coin, '#fff2b0', '#ffb547'], 300, 500, 0.9, 5.5);
         if (e.combo >= 3) fx.shake = Math.max(fx.shake, 0.15);
         fx.coinPulse = 1;
@@ -111,6 +112,7 @@ export function applyEvents(fx, events, orders) {
         break;
       case 'ticket':
         if (e.vip) fx.banner = { message: '★ VIP TICKET', sub: 'The critic is here: double pay, short wait', life: 0.4 };
+        else if (e.takeaway) floater(fx, 1140, 640, 'A rider pulls up: TO GO!', '#9fd0ff', 20, false, 1.6);
         break;
       default:
     }
