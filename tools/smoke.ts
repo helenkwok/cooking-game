@@ -115,6 +115,10 @@ await withChrome(chromeFromArgs(args), async (page, gameUrl) => {
   await read(page, '(() => { const s = window.__world.shift; s.coins = s.night.stars[1] + 5; s.time = s.seconds - 0.5; return true; })()');
   await waitFor(page, 'window.__world.shift.over === true', 'the night to end');
   await sleep(1500);
+  // The night's coins went to the bank: 1 on the results card buys the Sharp Knife.
+  await press(page, '1', 'Digit1', 49);
+  await waitFor(page, `JSON.parse(localStorage.getItem('steam-lantern.campaign')).perks.includes('knife')`, 'the Sharp Knife to be bought');
+  console.log(`results card: 1 bought the Sharp Knife, ${await read(page, `JSON.parse(localStorage.getItem('steam-lantern.campaign')).bank`)} coins left in the bank`);
   await press(page, ' ', 'Space', 32);
   await waitFor(page, `window.__world.shift.night.id === ${night + 1} && window.__world.shift.over === false`, `night ${night + 1} to start`);
   console.log(`night ${night} closed with two stars; Space opened night ${night + 1}: ${await read(page, 'window.__world.shift.night.name')}`);

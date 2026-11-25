@@ -1,10 +1,11 @@
 // The sidebar beside the kitchen: tonight's place in the five-night campaign, the most urgent
 // ticket and what its dish still lacks, what the chef holds, and a key to the kitchen's marks, so
 // the stall explains itself.
-import { COOK, FONT, PALETTE, SCORE } from '../config.js';
+import { FONT, PALETTE, SCORE } from '../config.js';
 import { NIGHTS, twistLine } from '../nights.js';
 import { heldTag, nextUp, prepWords } from '../hints.js';
 import { INGREDIENTS } from '../recipes.js';
+import { chopStrokes } from '../perks.js';
 import { drawDish, drawIngredient, drawIngredientIcon } from './food-art.js';
 import { SIDEBAR } from './layout.js';
 
@@ -134,7 +135,7 @@ function drawKey(ctx) {
   const { x } = SIDEBAR;
   let y = panel(ctx, SIDEBAR.y + 380, SIDEBAR.h - 380, 'KITCHEN KEY') + 2;
   const rows = [
-    ['pips', `board: ${COOK.chopStrokes} chops`],
+    ['pips', `board: ${chopStrokes()} chops`],
     ['ring', 'cooking by itself'],
     ['gold', `gold: pull! PERFECT +${SCORE.perfectBonus}`],
     ['amber', 'done: take it off'],

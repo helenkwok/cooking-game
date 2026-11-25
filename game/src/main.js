@@ -9,7 +9,8 @@ import { COOK, STEP } from './config.js';
 import { createAudio } from './audio.js';
 import { chopAt } from './kitchen.js';
 import { NIGHTS } from './nights.js';
-import { loadProgress, recordNight } from './progress.js';
+import { loadProgress, recordNight, saveProgress } from './progress.js';
+import { buyPerk, PERKS, usePerks } from './perks.js';
 import { nextStep, STEP_CHOP } from './recipes.js';
 import { createRandom } from './random.js';
 import { phaseIndex, secondsLeft, starsFor } from './shift.js';
@@ -20,6 +21,7 @@ import { createInput, KEY_CONFIRM, KEY_CRATE, KEY_LEFT, KEY_MUTE, KEY_PAUSE, KEY
 import { applyEvents, createEffects, updateEffects } from './render/effects.js';
 import { stageToKitchen } from './render/layout.js';
 import { createRenderer, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE } from './render/renderer.js';
+import { perkRowAt } from './render/screens-view.js';
 import { stageShot } from './shots.js';
 
 /** The longest frame the loop catches up on; a longer stall (a hidden tab) is dropped. */
@@ -108,6 +110,7 @@ function runGame() {
 
   function startNight(nightId) {
     selected = nightId;
+    usePerks(progress.perks);
     world.reset(nightId);
     Object.assign(fx, createEffects());
     servedDishes = [];
@@ -128,7 +131,7 @@ function runGame() {
     const night = world.shift.night.id;
     const best = progress.best[night] ?? 0;
     const opened = recordNight(progress, night, world.shift.coins, starsFor(world.shift));
-    outcome = { best, opened };
+    outcome = { best, opened, bought: -1, boughtAt: 0, note: '' };
     announce(`Night over. ${world.shift.coins} coins, ${world.shift.served} dishes served.${opened ? ' A new night is open.' : ''}`);
   }
 
@@ -164,11 +167,31 @@ function runGame() {
   function resultsPress(press) {
     // The card holds a moment, so a last frantic Space doesn't skip it.
     if (clock - overAt <= 1.2) return;
+    const row = press.type === 'click' ? perkRowAt(press.x, press.y) : press.type === KEY_CRATE && press.index < PERKS.length ? press.index : -1;
+    if (row >= 0) {
+      shop(row);
+      return;
+    }
     const night = world.shift.night.id;
     const canAdvance = starsFor(world.shift) > 0 && night < NIGHTS.length;
     if (press.type === KEY_RETRY) startNight(night);
     else if (press.type === KEY_CONFIRM || press.type === 'click') startNight(canAdvance ? night + 1 : night);
     else if (press.type === KEY_PAUSE) screen = SCREEN_TITLE;
+  }
+
+  /** Buy upgrade `index` from the bank on the results card. */
+  function shop(index) {
+    const refused = buyPerk(progress, index);
+    if (refused === null) {
+      saveProgress(progress);
+      Object.assign(outcome, { bought: index, boughtAt: clock, note: `${PERKS[index].name} is yours from the next night on!` });
+      audio.play('coin');
+      audio.play('perfect');
+    } else {
+      Object.assign(outcome, { bought: -1, note: refused });
+      audio.play('refuse');
+    }
+    announce(outcome.note);
   }
 
   function handlePresses() {

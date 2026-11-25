@@ -2,6 +2,7 @@
 // ask for, VIP tickets on the critic's night, and the takings. Pressure grows by asking for more
 // and harder dishes faster, never by adding chores.
 import { SCORE, SHIFT } from './config.js';
+import { patienceBoost, tipShare } from './perks.js';
 import { nightById, TWIST_CRITIC } from './nights.js';
 import { RECIPE_BY_ID } from './recipes.js';
 
@@ -60,7 +61,7 @@ export function ticketInterval(shift) {
 
 /** Tickets wait a little less as the night goes on. */
 export function patienceScale(shift) {
-  return shift.night.patience * (1 - 0.18 * shiftProgress(shift));
+  return shift.night.patience * patienceBoost() * (1 - 0.18 * shiftProgress(shift));
 }
 
 /** Dishes on tonight's menu by now (the late ones join part-way through). */
@@ -100,7 +101,7 @@ export function payForServe(shift, ticket) {
   else shift.combo = 0;
   shift.bestCombo = Math.max(shift.bestCombo, shift.combo);
   const price = ticket.recipe.price * (ticket.vip ? 2 : 1);
-  const tip = Math.round(price * SCORE.tipShare * freshness);
+  const tip = Math.round(price * tipShare() * freshness);
   const bonus = shift.combo > 1 ? (shift.combo - 1) * SCORE.comboBonus : 0;
   const earned = price + tip + bonus;
   shift.coins += earned;

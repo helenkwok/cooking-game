@@ -23,6 +23,7 @@ Tickets clip onto the order board, and each one is a dish with a patience bar. T
   - a strip under the kitchen keeps the controls in view;
   - stations where your food can go are outlined;
   - dishes on the mats show their progress ("Lantern Ramen 3/4", "READY").
+- **Stall upgrades**: every night's coins go into the bank, and the results card sells five lasting upgrades (Sharp Knife, Gold Ladle, Heavy Pans, Paper Lanterns, Tip Jar Sign).
 - **Tips for speed and combos for streaks**. You get five hearts, and a customer who walks out costs one. Each night has its own stars and best score.
 
 ## Controls
@@ -46,7 +47,7 @@ node serve.ts            # then open http://localhost:8080 in Chrome
 ## Layout
 
 - `game/`: the game, static files (`index.html` and ES modules under `game/src/`)
-  - `config.js` tuning, `recipes.js` the pantry and menu, `nights.js` the campaign, `progress.js` saved stars, `stations.js` the kitchen layout
+  - `config.js` tuning, `recipes.js` the pantry and menu, `nights.js` the campaign, `progress.js` saved stars and the bank, `perks.js` stall upgrades, `stations.js` the kitchen layout
   - `kitchen.js` station rules and cooking, `chef.js` movement and routing round the island, `orders.js` the order board, `shift.js` clock, pacing, VIPs and takings, `hints.js` what the kitchen tells you
   - `world.js` the game state and its step, `input.js`, `audio.js` (Web Audio synthesis), `main.js` boot and loop
   - `render/`: `layout.js`, `food-art.js`, `kitchen-view.js`, `decor.js`, `chef-view.js`, `hud-view.js`, `sidebar-view.js`, `status-bar-view.js`, `effects.js`, `screens-view.js`, `renderer.js`

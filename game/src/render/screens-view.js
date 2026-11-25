@@ -2,6 +2,7 @@
 // pause card, and the end-of-night results with their stars and what the night unlocked.
 import { FONT, PALETTE, SCORE } from '../config.js';
 import { NIGHTS, twistLine } from '../nights.js';
+import { PERKS } from '../perks.js';
 import { RECIPES } from '../recipes.js';
 import { starsFor } from '../shift.js';
 import { drawDish, drawIngredientIcon } from './food-art.js';
@@ -169,52 +170,100 @@ const VERDICTS = ['A quiet night at the market…', 'A decent night at the marke
  * The results card. `ready` is false for the moment it holds before it takes a key; `outcome`
  * is { best, opened } from the campaign record.
  */
-export function drawResults(ctx, shift, time, servedDishes, ready, outcome) {
+/** Where the results card's upgrade rows sit (stage coordinates), for drawing and clicks. */
+export const SHOP_ROW = { x: 664, y: 222, w: 424, h: 56, gap: 6 };
+
+/** The upgrade row under a stage point (its index), or -1. */
+export function perkRowAt(x, y) {
+  const r = SHOP_ROW;
+  if (x < r.x || x > r.x + r.w) return -1;
+  const i = Math.floor((y - r.y) / (r.h + r.gap));
+  return i >= 0 && i < PERKS.length && y - r.y - i * (r.h + r.gap) <= r.h ? i : -1;
+}
+
+/** The night's takings on the left; the stall's bank and its upgrades for sale on the right. */
+export function drawResults(ctx, shift, time, servedDishes, ready, outcome, progress) {
   dim(ctx, 0.62);
-  roundRect(ctx, 300, 60, 680, 600, 20, '#f6ecd8');
-  roundRect(ctx, 300, 60, 680, 92, 20, '#7d3a28');
-  text(ctx, `NIGHT ${shift.night.id} · ${shift.night.name.toUpperCase()}`, 640, 86, 15, '#f6d7b0');
-  text(ctx, shift.closedEarly ? 'STALL CLOSED' : 'LAST LANTERN OUT', 640, 120, 34, '#ffe1a6');
+  roundRect(ctx, 160, 52, 960, 616, 20, '#f6ecd8');
+  roundRect(ctx, 160, 52, 960, 88, 20, '#7d3a28');
+  text(ctx, `NIGHT ${shift.night.id} · ${shift.night.name.toUpperCase()}`, 640, 76, 15, '#f6d7b0');
+  text(ctx, shift.closedEarly ? 'STALL CLOSED' : 'LAST LANTERN OUT', 640, 110, 32, '#ffe1a6');
+  const cx = 404;
   const stars = starsFor(shift);
-  for (let i = 0; i < 3; i += 1) drawStar(ctx, 540 + i * 100, 196, i === 1 ? 42 : 34, i < stars, time);
+  for (let i = 0; i < 3; i += 1) drawStar(ctx, cx - 90 + i * 90, 184, i === 1 ? 38 : 31, i < stars, time);
   const verdict = shift.closedEarly && stars === 0 ? 'The lanterns flicker out early…' : VERDICTS[stars];
-  text(ctx, verdict, 640, 252, 20, PALETTE.ink, 'center', 'italic bold');
-  ctx.font = `bold 44px ${FONT}`;
+  text(ctx, verdict, cx, 236, 18, PALETTE.ink, 'center', 'italic bold');
+  ctx.font = `bold 40px ${FONT}`;
   const coinsWidth = ctx.measureText(`${shift.coins}`).width;
-  ctx.font = `normal 18px ${FONT}`;
-  const left = 640 - (44 + coinsWidth + 12 + ctx.measureText('coins tonight').width) / 2;
-  drawCoin(ctx, left + 20, 298, 19);
-  text(ctx, `${shift.coins}`, left + 48, 300, 44, '#b07a12', 'left');
-  text(ctx, 'coins tonight', left + 60 + coinsWidth, 304, 18, PALETTE.inkSoft, 'left', 'normal');
+  ctx.font = `normal 17px ${FONT}`;
+  const left = cx - (40 + coinsWidth + 12 + ctx.measureText('coins tonight').width) / 2;
+  drawCoin(ctx, left + 18, 280, 17);
+  text(ctx, `${shift.coins}`, left + 44, 282, 40, '#b07a12', 'left');
+  text(ctx, 'coins tonight', left + 56 + coinsWidth, 286, 17, PALETTE.inkSoft, 'left', 'normal');
   const rows = [
     ['Dishes served', shift.vipServed > 0 ? `${shift.served} (${shift.vipServed} VIP)` : String(shift.served)],
     ['Customers lost', String(shift.missed)],
     ['Best combo', shift.bestCombo > 1 ? `x${shift.bestCombo}` : '–'],
-    ['PERFECT pulls', shift.perfects > 0 ? `${shift.perfects} (+${shift.perfects * SCORE.perfectBonus} coins)` : '–'],
-    [`Best on this night`, `${Math.max(outcome?.best ?? 0, shift.coins)} coins`],
+    ['PERFECT pulls', shift.perfects > 0 ? `${shift.perfects} (+${shift.perfects * SCORE.perfectBonus})` : '–'],
+    ['Best on this night', `${Math.max(outcome?.best ?? 0, shift.coins)} coins`],
   ];
   rows.forEach(([name, value], i) => {
-    const y = 344 + i * 26;
+    const y = 324 + i * 26;
     ctx.fillStyle = i % 2 ? 'rgba(43,34,48,0.05)' : 'rgba(43,34,48,0.1)';
-    ctx.fillRect(380, y - 12, 520, 24);
-    text(ctx, name, 396, y, 17, PALETTE.ink, 'left', 'normal');
-    text(ctx, value, 884, y, 17, PALETTE.ink, 'right');
+    ctx.fillRect(196, y - 12, 416, 24);
+    text(ctx, name, 210, y, 16, PALETTE.ink, 'left', 'normal');
+    text(ctx, value, 598, y, 16, PALETTE.ink, 'right');
   });
   servedDishes.slice(-6).forEach((contents, i, list) => {
-    drawDish(ctx, contents, 640 - (list.length - 1) * 50 + i * 100, 508, 28);
+    drawDish(ctx, contents, cx - (list.length - 1) * 35 + i * 70, 482, 23);
   });
   const next = shift.night.stars.find((needed) => needed > shift.coins);
-  text(ctx, next ? `${next - shift.coins} more coins for the next star` : 'Every star earned!', 640, 552, 15, PALETTE.inkSoft, 'center', 'normal');
+  text(ctx, next ? `${next - shift.coins} more coins for the next star` : 'Every star earned!', cx, 522, 14, PALETTE.inkSoft, 'center', 'normal');
+  if (progress) drawShop(ctx, progress, outcome, time);
   const nextNight = NIGHTS.find((n) => n.id === shift.night.id + 1);
   if (outcome?.opened && nextNight) {
-    roundRect(ctx, 400, 570, 480, 34, 10, PALETTE.good);
-    text(ctx, `Night ${nextNight.id} unlocked: ${nextNight.name}!`, 640, 588, 17, '#14301c');
+    roundRect(ctx, 400, 564, 480, 34, 10, PALETTE.good);
+    text(ctx, `Night ${nextNight.id} unlocked: ${nextNight.name}!`, 640, 582, 17, '#14301c');
   }
   if (ready) {
     const blink = 0.6 + 0.4 * Math.sin(time * 4);
     ctx.globalAlpha = blink;
     const prompt = stars > 0 && nextNight ? `Space: Night ${nextNight.id} · R: replay this night` : 'Space: try this night again';
-    text(ctx, prompt, 640, 632, 19, '#7d3a28');
+    text(ctx, prompt, 640, 634, 19, '#7d3a28');
     ctx.globalAlpha = 1;
   }
+}
+
+function drawShop(ctx, progress, outcome, time) {
+  const r = SHOP_ROW;
+  roundRect(ctx, r.x - 12, 158, r.w + 24, 392, 14, 'rgba(125,58,40,0.1)');
+  text(ctx, 'STALL UPGRADES', r.x + 4, 180, 17, '#7d3a28', 'left');
+  ctx.font = `bold 16px ${FONT}`;
+  drawCoin(ctx, r.x + r.w - 18 - ctx.measureText(`${progress.bank} banked`).width, 180, 10);
+  text(ctx, `${progress.bank} banked`, r.x + r.w - 4, 181, 16, '#b07a12', 'right');
+  text(ctx, 'Every night’s coins bank here: 1–5 or click to buy', r.x + 4, 203, 12.5, PALETTE.inkSoft, 'left', 'normal');
+  PERKS.forEach((perk, i) => {
+    const y = r.y + i * (r.h + r.gap);
+    const have = progress.perks.includes(perk.id);
+    const afford = !have && progress.bank >= perk.cost;
+    const fresh = outcome?.bought === i ? Math.max(0, 1 - (time - outcome.boughtAt) * 1.5) : 0;
+    roundRect(ctx, r.x, y, r.w, r.h, 10, have ? '#d9efd9' : afford ? '#fff7e2' : 'rgba(43,34,48,0.06)');
+    if (afford || fresh > 0) {
+      ctx.strokeStyle = fresh > 0 ? `rgba(46,158,82,${0.4 + fresh * 0.6})` : '#e0a63a';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(r.x + 1, y + 1, r.w - 2, r.h - 2, 10);
+      ctx.stroke();
+    }
+    roundRect(ctx, r.x + 10, y + 14, 28, 28, 7, have ? PALETTE.good : '#7d3a28');
+    text(ctx, have ? '✓' : String(i + 1), r.x + 24, y + 29, 15, '#fff', 'center');
+    text(ctx, perk.name, r.x + 50, y + 19, 16, have || afford ? PALETTE.ink : PALETTE.inkSoft, 'left');
+    text(ctx, perk.words, r.x + 50, y + 39, 13, PALETTE.inkSoft, 'left', 'normal');
+    if (have) text(ctx, 'OWNED', r.x + r.w - 14, y + 29, 14, '#2e7d46', 'right');
+    else {
+      drawCoin(ctx, r.x + r.w - 62, y + 28, 9);
+      text(ctx, String(perk.cost), r.x + r.w - 14, y + 29, 16, afford ? '#b07a12' : PALETTE.inkSoft, 'right');
+    }
+  });
+  if (outcome?.note) text(ctx, outcome.note, r.x + r.w / 2, 540, 13.5, outcome.bought >= 0 ? '#2e7d46' : '#a8231d', 'center');
 }

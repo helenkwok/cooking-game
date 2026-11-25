@@ -3,6 +3,7 @@
 // food left too long; boards only chop while the chef chops. Every rule reports an event the
 // renderer and the sound answer at once.
 import { COOK, SCORE } from './config.js';
+import { chopStrokes, graceFor, perfectWindow } from './perks.js';
 import { createItem, INGREDIENTS, isReady, nextStep, STEP_BOIL, STEP_CHOP, STEP_SEAR } from './recipes.js';
 import { ASSEMBLY, BIN, BOARD, CRATE, GRIDDLE, PASS, POT, SHELF } from './stations.js';
 
@@ -45,7 +46,7 @@ function cookerStep(s) {
 /** Food just done and still within the PERFECT window (the gold arc on the ring). */
 function inPerfectWindow(s) {
   const item = s.item;
-  return item !== null && !item.burnt && nextStep(item) !== cookerStep(s) && item.progress <= COOK.perfect;
+  return item !== null && !item.burnt && nextStep(item) !== cookerStep(s) && item.progress <= perfectWindow();
 }
 
 /** A PERFECT pull: a few coins and a count for the results card. */
@@ -189,7 +190,7 @@ export function chopAt(world, s) {
   if (s.type !== BOARD || s.item === null || nextStep(s.item) !== STEP_CHOP) return false;
   s.chop += 1;
   event(world, 'chop', s, { kind: s.item.kind, stroke: s.chop });
-  if (s.chop >= COOK.chopStrokes) {
+  if (s.chop >= chopStrokes()) {
     s.item.done += 1;
     s.chop = 0;
     event(world, 'chopped', s, { kind: s.item.kind });
@@ -203,7 +204,7 @@ export function updateCookers(world, stations, dt) {
     if ((s.type !== POT && s.type !== GRIDDLE) || s.item === null || s.item.burnt) continue;
     const item = s.item;
     const step = cookerStep(s);
-    const grace = s.type === POT ? COOK.boilGrace : COOK.searGrace;
+    const grace = graceFor(s.type === POT);
     if (nextStep(item) === step) {
       item.progress += dt;
       const time = INGREDIENTS[item.kind].times[step];
@@ -228,10 +229,10 @@ export function cookerGauge(s) {
   const item = s.item;
   if (item === null || item.burnt) return { cooking: 0, overdone: 0, warn: false, perfect: false, share: 0 };
   const step = cookerStep(s);
-  const grace = s.type === POT ? COOK.boilGrace : COOK.searGrace;
-  const share = COOK.perfect / grace;
+  const grace = graceFor(s.type === POT);
+  const share = perfectWindow() / grace;
   if (nextStep(item) === step) return { cooking: item.progress / INGREDIENTS[item.kind].times[step], overdone: 0, warn: false, perfect: false, share };
-  return { cooking: 1, overdone: item.progress / grace, warn: grace - item.progress <= COOK.warnAt, perfect: item.progress <= COOK.perfect, share };
+  return { cooking: 1, overdone: item.progress / grace, warn: grace - item.progress <= COOK.warnAt, perfect: item.progress <= perfectWindow(), share };
 }
 
 export { isDish };

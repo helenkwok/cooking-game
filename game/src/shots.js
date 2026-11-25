@@ -174,7 +174,10 @@ function stageResults(world) {
     ['broth', 'egg', 'tofu', 'scallion'],
     ['noodles', 'broth', 'pork', 'egg', 'mushroom', 'scallion'],
   ];
-  return { screen: SCREEN_OVER, time: 2.4, servedDishes: served, progress: MIDWAY, outcome: { best: 0, opened: true } };
+  // Three upgrades owned, Heavy Pans bought a moment ago, Paper Lanterns now affordable.
+  const progress = { ...MIDWAY, bank: 315, perks: ['knife', 'ladle', 'pans'] };
+  const outcome = { best: 0, opened: true, bought: 2, boughtAt: 2.1, note: 'Heavy Pans is yours from the next night on!' };
+  return { screen: SCREEN_OVER, time: 2.4, servedDishes: served, progress, outcome };
 }
 
 /** Stage the named scene on `world` (and `fx`); returns what the renderer needs to paint it. */

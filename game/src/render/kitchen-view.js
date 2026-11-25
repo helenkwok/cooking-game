@@ -1,7 +1,8 @@
 // The kitchen itself: the lantern-lit back wall, the tiled floor, the wooden counters and every
 // station on them, with what each holds and how far along it is.
-import { FLOOR, ISLAND, PALETTE, FONT, COOK } from '../config.js';
+import { FLOOR, ISLAND, PALETTE, FONT } from '../config.js';
 import { cookerGauge } from '../kitchen.js';
+import { chopStrokes } from '../perks.js';
 import { fitsRecipe, INGREDIENTS, matchRecipe, nextStep, RECIPES, STEP_CHOP } from '../recipes.js';
 import { ASSEMBLY, BIN, BOARD, CRATE, GRIDDLE, PASS, POT, SHELF } from '../stations.js';
 import { drawDish, drawIngredient, drawSteam } from './food-art.js';
@@ -283,7 +284,7 @@ function drawBoard(ctx, s, time, knife) {
   ctx.restore();
   // Chop pips: how many strokes this item still needs.
   if (s.item !== null && nextStep(s.item) === STEP_CHOP) {
-    for (let i = 0; i < COOK.chopStrokes; i += 1) {
+    for (let i = 0; i < chopStrokes(); i += 1) {
       ctx.beginPath();
       ctx.arc(s.x + 26 + i * 14, s.y + s.h - 6, 5, 0, TAU);
       ctx.fillStyle = i < s.chop ? PALETTE.good : 'rgba(40,20,10,0.55)';
