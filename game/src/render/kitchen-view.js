@@ -2,7 +2,7 @@
 // station on them, with what each holds and how far along it is.
 import { FLOOR, ISLAND, PALETTE, FONT, COOK } from '../config.js';
 import { cookerGauge } from '../kitchen.js';
-import { INGREDIENTS, matchRecipe, nextStep, STEP_CHOP } from '../recipes.js';
+import { fitsRecipe, INGREDIENTS, matchRecipe, nextStep, RECIPES, STEP_CHOP } from '../recipes.js';
 import { ASSEMBLY, BIN, BOARD, CRATE, GRIDDLE, PASS, POT, SHELF } from '../stations.js';
 import { drawDish, drawIngredient, drawSteam } from './food-art.js';
 
@@ -340,10 +340,33 @@ function drawAssembly(ctx, s, time, wanted) {
   const recipe = matchRecipe(s.dish);
   const glow = recipe !== null ? (wanted.has(recipe.id) ? 'rgba(120,255,150,0.75)' : 'rgba(255,220,120,0.5)') : null;
   drawDish(ctx, s.dish, s.cx, s.cy - 2, 36, { glow, steam: s.dish.length > 0 ? time + s.cx : 0 });
-  if (recipe !== null) {
-    roundRect(ctx, s.cx - 58, s.y - 16, 116, 20, 6, wanted.has(recipe.id) ? PALETTE.good : PALETTE.warn);
-    label(ctx, recipe.name, s.cx, s.y - 6, 12, PALETTE.ink);
+  const tag = dishTag(s.dish, recipe, wanted);
+  if (tag !== null) {
+    ctx.font = `bold 12px ${FONT}`;
+    const w = Math.min(138, ctx.measureText(tag.text).width + 14);
+    roundRect(ctx, s.cx - w / 2, s.y - 17, w, 21, 7, tag.fill);
+    label(ctx, tag.text, s.cx, s.y - 6, 12, tag.ink);
   }
+}
+
+/**
+ * What a mat's dish is on its way to: "Lantern Ramen 3/4" while it is being built, "READY ·
+ * Ember Noodles" once it is complete and a ticket wants it.
+ */
+function dishTag(contents, recipe, wanted) {
+  if (contents.length === 0) return null;
+  if (recipe !== null) {
+    return wanted.has(recipe.id)
+      ? { text: `READY · ${recipe.name}`, fill: PALETTE.good, ink: PALETTE.ink }
+      : { text: `${recipe.name} (no ticket)`, fill: PALETTE.warn, ink: PALETTE.ink };
+  }
+  let best = null;
+  for (const candidate of RECIPES) {
+    if (!wanted.has(candidate.id) || !fitsRecipe(contents, candidate)) continue;
+    if (best === null || candidate.items.length < best.items.length) best = candidate;
+  }
+  if (best === null) return { text: 'No match: bin it', fill: '#5a2c22', ink: '#ffd0c4' };
+  return { text: `${best.name} ${contents.length}/${best.items.length}`, fill: PALETTE.paper, ink: PALETTE.ink };
 }
 
 function drawPass(ctx, s, time, display) {

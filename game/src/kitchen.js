@@ -122,6 +122,8 @@ export function interact(world, s) {
         if (addToDish(world, held.contents, s.item, s)) s.item = null;
       } else if (held !== null && !isDish(held) && isDish(s.item)) {
         if (addToDish(world, s.item.contents, held, s)) chef.held = null;
+      } else if (held !== null) {
+        event(world, 'refuse', s, { text: 'Shelf is full' });
       }
       return;
     }
@@ -138,6 +140,8 @@ export function interact(world, s) {
         event(world, 'place', s, { dish: true });
       } else if (held === null) {
         event(world, 'refuse', s, { text: 'Bring a prepped ingredient' });
+      } else {
+        event(world, 'refuse', s, { text: 'Mat is taken' });
       }
       return;
     }

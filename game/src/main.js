@@ -95,6 +95,11 @@ function runGame() {
   let warnedLastSeconds = false;
   let lastTick = 0;
   let mouseChop = null;
+  let overAt = 0;
+
+  // Browsers only let sound start inside a real key or pointer handler.
+  window.addEventListener('keydown', () => audio.unlock());
+  window.addEventListener('pointerdown', () => audio.unlock());
 
   function announce(message) {
     status.textContent = message;
@@ -116,6 +121,7 @@ function runGame() {
 
   function endShift() {
     screen = SCREEN_OVER;
+    overAt = clock;
     audio.stopMusic();
     if (world.shift.coins > best) {
       best = world.shift.coins;
@@ -134,6 +140,8 @@ function runGame() {
       mouseChop = s.id;
       return;
     }
+    // Holding the button on a far board keeps chopping once the chef gets there.
+    if (s.type === BOARD) mouseChop = s.id;
     world.walkTo(s);
   }
 
@@ -145,7 +153,9 @@ function runGame() {
         continue;
       }
       if (screen === SCREEN_TITLE || screen === SCREEN_OVER) {
-        if (press.type === KEY_CONFIRM || press.type === 'click') startShift();
+        // The results card holds a moment, so a last frantic Space doesn't skip it.
+        const settled = screen === SCREEN_TITLE || clock - overAt > 1.2;
+        if (settled && (press.type === KEY_CONFIRM || press.type === 'click')) startShift();
         continue;
       }
       if (screen === SCREEN_PAUSED) {

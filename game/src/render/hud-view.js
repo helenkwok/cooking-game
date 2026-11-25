@@ -112,10 +112,16 @@ export function drawOrderBoard(ctx, orders, time, progress) {
   ctx.fillStyle = '#c8a95a';
   ctx.fillRect(16, 10, 954, 5);
   if (orders.tickets.length === 0) text(ctx, 'Waiting for the first customers…', 492, 76, 18, 'rgba(255,240,220,0.5)', 'center', 'normal');
+  // Tickets stay on the board: one sliding in or out never spills over the service panel.
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(14, 0, 958, 144);
+  ctx.clip();
   orders.tickets.forEach((ticket, index) => {
     const slot = ticketSlot(index);
     drawTicket(ctx, ticket, slot.x, slot.y, time, progress.get(ticket.id) ?? []);
   });
+  ctx.restore();
 }
 
 function drawHeart(ctx, x, y, size, full) {

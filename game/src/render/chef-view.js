@@ -1,6 +1,7 @@
 // The stall's cook, seen from above and a little in front: a round cook in an indigo jacket, a
 // tall red headscarf and an apron, waddling as they walk and holding what they carry up high.
 import { FONT } from '../config.js';
+import { waypoint } from '../chef.js';
 import { drawDish, drawIngredient } from './food-art.js';
 
 const TAU = Math.PI * 2;
@@ -66,6 +67,35 @@ export function drawChef(ctx, chef, time) {
     if (chef.held.dish) drawDish(ctx, chef.held.contents, 0, -92, 26, { steam: time });
     else drawIngredient(ctx, chef.held, 0, -90, 52, time);
   }
+  ctx.restore();
+}
+
+/** The route of a click-walk: footstep dots from the chef, round the island, to the station. */
+export function drawRoute(ctx, chef, stations, time) {
+  if (chef.target === null) return;
+  const s = stations.find((station) => station.id === chef.target);
+  const points = [{ x: chef.x, y: chef.y }];
+  for (let i = 0; i < 3; i += 1) {
+    const from = points[points.length - 1];
+    const next = waypoint(from.x, from.y, s.ax, s.ay);
+    points.push(next);
+    if (next.x === s.ax && next.y === s.ay) break;
+  }
+  ctx.save();
+  ctx.setLineDash([2, 14]);
+  ctx.lineDashOffset = -time * 40;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = 'rgba(255,236,170,0.55)';
+  ctx.beginPath();
+  points.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(s.ax, s.ay, 12, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,236,170,0.8)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
   ctx.restore();
 }
 

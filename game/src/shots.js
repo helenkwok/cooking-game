@@ -138,8 +138,10 @@ function stageLastCall(world, fx) {
   work(world, 'crate-scallion');
   work(world, 'board-a');
   work(world, 'assembly-2');
-  world.chef.x = 820;
-  world.chef.y = 520;
+  // Running the feast from the island round to the pass (the route shows as a dotted trail).
+  world.chef.x = 760;
+  world.chef.y = 312;
+  world.chef.target = 'pass';
   world.chef.moving = true;
   world.chef.walk = 1.2;
   world.chef.facing = 1;

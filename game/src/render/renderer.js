@@ -6,7 +6,7 @@ import { stationInReach } from '../chef.js';
 import { openTickets } from '../orders.js';
 import { phaseIndex } from '../shift.js';
 import { heldTag, ticketProgress, usefulStations } from '../hints.js';
-import { drawChef, drawHeldTag } from './chef-view.js';
+import { drawChef, drawHeldTag, drawRoute } from './chef-view.js';
 import { drawFloaters, drawParticles } from './effects.js';
 import { drawBanner, drawOrderBoard, drawServicePanel } from './hud-view.js';
 import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations, drawStringLights } from './kitchen-view.js';
@@ -72,6 +72,7 @@ export function createRenderer(canvas) {
     drawRoom(ctx, time, rush);
     drawBackCounters(ctx);
     drawStations(ctx, world.stations, { ...common, sides: ['back', 'left', 'right'] });
+    drawRoute(ctx, world.chef, world.stations, time);
     // The chef passes behind the island when north of it and in front of it when south.
     const behind = world.chef.y < ISLAND.y + ISLAND.h / 2;
     if (behind) drawChef(ctx, world.chef, time);
