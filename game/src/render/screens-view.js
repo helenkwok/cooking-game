@@ -103,7 +103,7 @@ export function drawTitle(ctx, time, progress, selected) {
   ctx.shadowBlur = 24;
   text(ctx, 'STEAM LANTERN', 640, 114, 56, '#ffe1a6');
   ctx.restore();
-  text(ctx, 'a night-market noodle stall · five nights', 640, 152, 18, '#f6d7b0', 'center', 'italic bold');
+  text(ctx, 'a night-market noodle stall · 5 nights · 5 stall upgrades', 640, 152, 18, '#f6d7b0', 'center', 'italic bold');
 
   // The menu: six dishes from eight ingredients.
   roundRect(ctx, 130, 198, 1020, 160, 14, 'rgba(246,236,216,0.96)');
