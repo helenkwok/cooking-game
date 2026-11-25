@@ -73,6 +73,8 @@ function nightCardAt(x, y) {
 
 function runShot(name) {
   const scene = stageShot(name, world, fx);
+  // The scene is staged by the base rules; it is drawn with the upgrades its campaign owns.
+  usePerks(scene.progress?.perks ?? []);
   let painted = 0;
   function paint() {
     renderer.draw(world, scene.screen, { fx, time: scene.time, hover: null, servedDishes: scene.servedDishes, hints: true, progress: scene.progress, selected: scene.selected, outcome: scene.outcome });

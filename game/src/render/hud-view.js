@@ -2,11 +2,11 @@
 // ingredients and a patience bar that turns from green to red), the shift clock, the takings,
 // the hearts and the combo.
 import { FONT, PALETTE, SHIFT } from '../config.js';
-import { PHASES, phaseIndex, secondsLeft, shiftProgress } from '../shift.js';
+import { PHASES, phaseIndex, priceOf, secondsLeft, shiftProgress } from '../shift.js';
 import { drawDish, drawIngredientIcon } from './food-art.js';
 
 const TAU = Math.PI * 2;
-export const TICKET = { width: 178, height: 128, gap: 10, left: 24, top: 10 };
+export const TICKET = { width: 196, height: 128, gap: 10, left: 24, top: 10 };
 
 function text(ctx, value, x, y, size, colour, align = 'center', weight = 'bold') {
   ctx.font = `${weight} ${size}px ${FONT}`;
@@ -97,7 +97,16 @@ function drawTicket(ctx, ticket, x, y, time, have) {
   roundRect(ctx, 8, TICKET.height - 20, TICKET.width - 16, 12, 6, 'rgba(43,34,48,0.18)');
   roundRect(ctx, 8, TICKET.height - 20, Math.max(6, (TICKET.width - 16) * fraction), 12, 6, patienceColour(fraction));
   text(ctx, `${Math.ceil(ticket.left)}s`, TICKET.width - 12, TICKET.height - 33, 12, urgent ? PALETTE.bad : PALETTE.inkSoft, 'right');
-  text(ctx, `${ticket.recipe.price * (ticket.vip ? 2 : 1)}c`, 12, TICKET.height - 33, 12, ticket.vip ? '#b8860b' : PALETTE.inkSoft, 'left');
+  text(ctx, `${priceOf(ticket)}c`, 12, TICKET.height - 33, 12, ticket.vip || ticket.special ? '#b8860b' : PALETTE.inkSoft, 'left');
+  if (ticket.special) {
+    // Tonight's special: a red ribbon across the corner.
+    ctx.save();
+    ctx.translate(TICKET.width - 22, 40);
+    ctx.rotate(0.5);
+    roundRect(ctx, -34, -9, 68, 18, 3, '#c9372f');
+    text(ctx, 'SPECIAL', 0, 1, 11, '#fff3d6');
+    ctx.restore();
+  }
   if (ticket.leaving > 0) {
     ctx.save();
     ctx.translate(TICKET.width / 2, 70);
@@ -115,15 +124,15 @@ function drawTicket(ctx, ticket, x, y, time, have) {
 
 /** The rail and its tickets; `progress` maps a ticket id to the ingredients already in its dish. */
 export function drawOrderBoard(ctx, orders, time, progress) {
-  roundRect(ctx, 10, 4, 966, 140, 10, '#2b1d22');
-  roundRect(ctx, 14, 8, 958, 132, 8, '#3a272d');
+  roundRect(ctx, 10, 4, 1056, 140, 10, '#2b1d22');
+  roundRect(ctx, 14, 8, 1048, 132, 8, '#3a272d');
   ctx.fillStyle = '#c8a95a';
-  ctx.fillRect(16, 10, 954, 5);
-  if (orders.tickets.length === 0) text(ctx, 'Waiting for the first customers…', 492, 76, 18, 'rgba(255,240,220,0.5)', 'center', 'normal');
+  ctx.fillRect(16, 10, 1044, 5);
+  if (orders.tickets.length === 0) text(ctx, 'Waiting for the first customers…', 538, 76, 18, 'rgba(255,240,220,0.5)', 'center', 'normal');
   // Tickets stay on the board: one sliding in or out never spills over the service panel.
   ctx.save();
   ctx.beginPath();
-  ctx.rect(14, 0, 958, 144);
+  ctx.rect(14, 0, 1048, 144);
   ctx.clip();
   orders.tickets.forEach((ticket, index) => {
     const slot = ticketSlot(index);
@@ -156,45 +165,45 @@ export function drawCoin(ctx, x, y, r) {
 
 /** The clock, phase, takings, hearts and combo on the panel to the right of the order board. */
 export function drawServicePanel(ctx, shift, time, coinPulse) {
-  roundRect(ctx, 984, 4, 286, 140, 10, '#2b1d22');
-  roundRect(ctx, 988, 8, 278, 132, 8, '#3a272d');
+  roundRect(ctx, 1076, 4, 194, 140, 10, '#2b1d22');
+  roundRect(ctx, 1080, 8, 186, 132, 8, '#3a272d');
   // The dial: a lantern-moon that empties as the night runs out.
-  const cx = 1042;
-  const cy = 72;
+  const cx = 1126;
+  const cy = 66;
   const left = 1 - shiftProgress(shift);
   const lowTime = secondsLeft(shift) <= 30;
   ctx.beginPath();
-  ctx.arc(cx, cy, 46, 0, TAU);
+  ctx.arc(cx, cy, 43, 0, TAU);
   ctx.fillStyle = '#1b1426';
   ctx.fill();
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.arc(cx, cy, 42, -Math.PI / 2, -Math.PI / 2 + TAU * left);
+  ctx.arc(cx, cy, 39, -Math.PI / 2, -Math.PI / 2 + TAU * left);
   ctx.closePath();
   ctx.fillStyle = lowTime && Math.floor(time * 4) % 2 ? PALETTE.bad : PALETTE.lantern;
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(cx, cy, 30, 0, TAU);
+  ctx.arc(cx, cy, 28, 0, TAU);
   ctx.fillStyle = '#2b1d22';
   ctx.fill();
   const seconds = Math.ceil(secondsLeft(shift));
-  text(ctx, `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`, cx, cy + 1, 20, lowTime ? '#ff9b8f' : PALETTE.text);
+  text(ctx, `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`, cx, cy + 1, 18, lowTime ? '#ff9b8f' : PALETTE.text);
   // Phase pips under the dial.
   PHASES.forEach((phase, i) => {
     ctx.beginPath();
-    ctx.arc(cx - 16 + i * 16, cy + 56, 5, 0, TAU);
+    ctx.arc(cx - 16 + i * 16, cy + 58, 5, 0, TAU);
     ctx.fillStyle = i <= phaseIndex(shift) ? PALETTE.lantern : 'rgba(255,255,255,0.15)';
     ctx.fill();
   });
   const phase = PHASES[phaseIndex(shift)].name;
-  text(ctx, phase.toUpperCase(), 1102, 26, 14, phaseIndex(shift) === 1 ? '#ffb070' : 'rgba(255,240,220,0.75)', 'left');
+  text(ctx, phase.toUpperCase(), 1262, 24, 12, phaseIndex(shift) === 1 ? '#ffb070' : 'rgba(255,240,220,0.75)', 'right');
   // Takings.
   const pulse = 1 + coinPulse * 0.25;
-  drawCoin(ctx, 1116, 62, 13 * pulse);
-  text(ctx, String(shift.coins), 1136, 63, 30 * pulse, PALETTE.coin, 'left');
-  for (let i = 0; i < SHIFT.hearts; i += 1) drawHeart(ctx, 1112 + i * 26, 104, 11, i < shift.hearts);
-  if (shift.combo > 1) text(ctx, `COMBO x${shift.combo}`, 1254, 128, 14, '#8ff0a4', 'right');
-  else text(ctx, `${shift.served} served`, 1254, 128, 13, 'rgba(255,240,220,0.55)', 'right', 'normal');
+  drawCoin(ctx, 1186, 56, 10 * pulse);
+  text(ctx, String(shift.coins), 1200, 57, 26 * pulse, PALETTE.coin, 'left');
+  for (let i = 0; i < SHIFT.hearts; i += 1) drawHeart(ctx, 1188 + i * 17, 92, 7, i < shift.hearts);
+  if (shift.combo > 1) text(ctx, `COMBO x${shift.combo}`, 1262, 124, 13, '#8ff0a4', 'right');
+  else text(ctx, `${shift.served} served`, 1262, 124, 12, 'rgba(255,240,220,0.55)', 'right', 'normal');
 }
 
 /** Big centred banners: the phase changes, the last thirty seconds. */

@@ -243,9 +243,15 @@ function drawCrate(ctx, s, time) {
     roundRect(ctx, s.x + 4, s.y + 4, s.w - 8, s.h - 8, 6, '#7b4f2c');
     roundRect(ctx, s.x + 9, s.y + 9, s.w - 18, s.h - 18, 4, '#4d2f1a');
     const raw = { kind: s.kind, done: 0, burnt: false };
-    drawIngredient(ctx, raw, s.cx - 16, s.cy - 2, 44);
-    drawIngredient(ctx, raw, s.cx + 16, s.cy + 4, 44);
-    drawIngredient(ctx, raw, s.cx, s.cy - 10, 44);
+    // Heaped full: a back row and a front row, the front a touch bigger.
+    for (const [dx, dy, size] of [[-24, -12, 42], [0, -14, 42], [24, -12, 42], [-14, 2, 48], [14, 4, 48]]) {
+      drawIngredient(ctx, raw, s.cx + dx, s.cy + dy, size);
+    }
+    const shine = ctx.createLinearGradient(0, s.y + 9, 0, s.y + 40);
+    shine.addColorStop(0, 'rgba(255,240,210,0.22)');
+    shine.addColorStop(1, 'rgba(255,240,210,0)');
+    ctx.fillStyle = shine;
+    ctx.fillRect(s.x + 9, s.y + 9, s.w - 18, 31);
     ctx.fillStyle = '#9a6a3e';
     ctx.fillRect(s.x + 4, s.y + s.h - 16, s.w - 8, 8);
   }
@@ -324,7 +330,15 @@ function drawCooker(ctx, s, time) {
     ctx.fill();
     ctx.beginPath();
     ctx.arc(s.cx, s.cy, 31, 0, TAU);
-    ctx.fillStyle = s.item !== null && s.item.burnt ? '#5d5a4a' : '#7fa7b8';
+    // Stock at a rolling boil: golden and glowing at the middle (grey once something burns in it).
+    if (s.item !== null && s.item.burnt) ctx.fillStyle = '#5d5a4a';
+    else {
+      const stock = ctx.createRadialGradient(s.cx - 6, s.cy - 6, 4, s.cx, s.cy, 31);
+      stock.addColorStop(0, s.item !== null ? '#ffd889' : '#cfe0e6');
+      stock.addColorStop(0.6, s.item !== null ? '#e3a145' : '#9fbfcc');
+      stock.addColorStop(1, s.item !== null ? '#b8732a' : '#7fa7b8');
+      ctx.fillStyle = stock;
+    }
     ctx.fill();
     roundRect(ctx, s.cx + 34, s.cy - 5, 26, 10, 4, '#3b2a20');
     if (s.item !== null) {
@@ -337,7 +351,8 @@ function drawCooker(ctx, s, time) {
         ctx.stroke();
       }
       drawIngredient(ctx, s.item, s.cx, s.cy, 46, time);
-      drawSteam(ctx, s.cx, s.cy - 16, 20, time + s.cy);
+      drawSteam(ctx, s.cx, s.cy - 16, 26, time + s.cy);
+      drawSteam(ctx, s.cx + 14, s.cy - 10, 18, time * 1.3 + s.cy + 2);
     }
   } else {
     roundRect(ctx, s.x + 8, s.y + 6, s.w - 16, s.h - 12, 8, '#1f1d1f');

@@ -23,6 +23,7 @@ Tickets clip onto the order board, and each one is a dish with a patience bar. T
   - a strip under the kitchen keeps the controls in view;
   - stations where your food can go are outlined;
   - dishes on the mats show their progress ("Lantern Ramen 3/4", "READY").
+- **Tonight's special**: one dish each night pays half again, marked with a red ribbon on its ticket.
 - **Stall upgrades**: every night's coins go into the bank, and the results card sells five lasting upgrades (Sharp Knife, Gold Ladle, Heavy Pans, Paper Lanterns, Tip Jar Sign).
 - **Tips for speed and combos for streaks**. You get five hearts, and a customer who walks out costs one. Each night has its own stars and best score.
 

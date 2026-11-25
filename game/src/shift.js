@@ -94,13 +94,18 @@ export function rollVip(shift, random) {
   return shift.night.twist === TWIST_CRITIC && shift.time > 20 && random() < 0.22;
 }
 
+/** A ticket's price: doubled for a VIP, half again for tonight's special. */
+export function priceOf(ticket) {
+  return Math.round(ticket.recipe.price * (ticket.vip ? 2 : 1) * (ticket.special ? 1.5 : 1));
+}
+
 /** Pay for a served ticket: price (doubled for a VIP), a tip for speed and the combo bonus. */
 export function payForServe(shift, ticket) {
   const freshness = ticket.left / ticket.patience;
   if (freshness >= 0.5) shift.combo = Math.min(SCORE.comboCap, shift.combo + 1);
   else shift.combo = 0;
   shift.bestCombo = Math.max(shift.bestCombo, shift.combo);
-  const price = ticket.recipe.price * (ticket.vip ? 2 : 1);
+  const price = priceOf(ticket);
   const tip = Math.round(price * tipShare() * freshness);
   const bonus = shift.combo > 1 ? (shift.combo - 1) * SCORE.comboBonus : 0;
   const earned = price + tip + bonus;

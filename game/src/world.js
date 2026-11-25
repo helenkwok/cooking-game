@@ -106,6 +106,7 @@ export function createWorld(random, nightId = 1) {
         const recipe = chooseRecipe(shift, world.random, world.lastRecipe);
         world.lastRecipe = recipe.id;
         const ticket = addTicket(world.orders, recipe, patienceScale(shift), rollVip(shift, world.random));
+        ticket.special = recipe.id === shift.night.special;
         world.events.push({ type: 'ticket', ticket: ticket.id, recipe: recipe.id, vip: ticket.vip, x: 0, y: 0 });
       }
       shift.nextTicket = ticketInterval(shift) * (0.85 + world.random() * 0.3);

@@ -72,6 +72,7 @@ function startCooking(world, kind, id, seconds, before = []) {
 /** Clip a ticket with `fraction` of its patience left. */
 function ticket(world, id, fraction, vip = false) {
   const t = addTicket(world.orders, RECIPE_BY_ID[id], patienceScale(world.shift), vip);
+  t.special = id === world.shift.night.special;
   t.left = t.patience * fraction;
   t.age = 3;
   return t;
@@ -127,7 +128,7 @@ function stageService(world, fx) {
     p.x += p.vx * 0.12;
     p.y += p.vy * 0.12;
   }
-  return { screen: SCREEN_PLAY, time: 12.3, servedDishes: [], progress: MIDWAY };
+  return { screen: SCREEN_PLAY, time: 12.3, servedDishes: [], progress: { ...MIDWAY, perks: ['ladle', 'pans'] } };
 }
 
 /** Last Call on Midnight Market: big orders, a pot about to boil over, a Midnight Feast run to the pass. */
@@ -156,9 +157,22 @@ function stageLastCall(world, fx) {
   ticket(world, 'feast', 0.22);
   ticket(world, 'moon', 0.41);
   ticket(world, 'grove', 0.63);
-  ticket(world, 'ember', 0.8);
+  // An Ember Noodles just went out: its ticket lifts away and its diner beams.
+  const served = ticket(world, 'ember', 0.8);
+  served.served = true;
+  served.leaving = 0.25;
   ticket(world, 'feast', 0.97);
-  return { screen: SCREEN_PLAY, time: 31.7, servedDishes: [], progress: { unlocked: 5, best: { ...MIDWAY.best, 4: 342 }, stars: { ...MIDWAY.stars, 4: 2 } } };
+  world.events.push({ type: 'serve', x: 948, y: 650, earned: 61, tip: 13, bonus: 16, combo: 5, contents: RECIPE_BY_ID.ember.items });
+  applyEvents(fx, world.events, world.orders);
+  world.events.length = 0;
+  fx.floaters.forEach((f) => { f.age = 0.3; });
+  for (const p of fx.particles) {
+    p.age = 0.15;
+    p.x += p.vx * 0.15;
+    p.y += p.vy * 0.15;
+  }
+  const progress = { unlocked: 5, best: { ...MIDWAY.best, 4: 342 }, stars: { ...MIDWAY.stars, 4: 2 }, perks: ['knife', 'ladle', 'pans'] };
+  return { screen: SCREEN_PLAY, time: 31.7, servedDishes: [], progress };
 }
 
 /** The end of the Lantern Festival: a strong two-star night that opens the critic's night. */

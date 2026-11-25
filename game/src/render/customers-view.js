@@ -106,10 +106,32 @@ function drawDiner(ctx, x, ticket, mood, t, time) {
     const puff = (time * 1.5 + id) % 1;
     ellipse(ctx, -10, -40 - puff * 16, 5 + puff * 4, 4 + puff * 3, `rgba(255,255,255,${0.5 * (1 - puff)})`);
   } else if (mood === 'happy') {
-    ctx.font = 'bold 20px sans-serif';
+    // A big heart that pops up and floats, and a sparkle either side.
+    const rise = Math.min(1, t * 2);
+    ctx.font = `bold ${Math.round(18 + 16 * rise)}px sans-serif`;
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#ff7a8a';
-    ctx.fillText('♥', 16, -40 - (time * 30 % 10));
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(60,20,30,0.6)';
+    ctx.strokeText('♥', -30, -14 - rise * 8);
+    ctx.fillStyle = '#ff5f7a';
+    ctx.fillText('♥', -30, -14 - rise * 8);
+    ctx.fillStyle = '#ffe9a8';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText('✦', -52, -24 - rise * 6);
+    ctx.fillText('✦', -10, -30 - rise * 8);
+  } else if (mood === 'leaving') {
+    // A storm cloud over a diner who gave up.
+    ellipse(ctx, 34, -30, 16, 9, 'rgba(70,70,84,0.9)');
+    ellipse(ctx, 25, -26, 10, 7, 'rgba(70,70,84,0.9)');
+    ellipse(ctx, 44, -26, 10, 7, 'rgba(70,70,84,0.9)');
+    ctx.strokeStyle = '#ffd25a';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(36, -21);
+    ctx.lineTo(30, -12);
+    ctx.lineTo(37, -12);
+    ctx.lineTo(31, -3);
+    ctx.stroke();
   }
   ctx.restore();
 }

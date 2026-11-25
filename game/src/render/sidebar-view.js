@@ -4,8 +4,8 @@
 import { FONT, PALETTE, SCORE } from '../config.js';
 import { NIGHTS, twistLine } from '../nights.js';
 import { heldTag, nextUp, prepWords } from '../hints.js';
-import { INGREDIENTS } from '../recipes.js';
-import { chopStrokes } from '../perks.js';
+import { INGREDIENTS, RECIPE_BY_ID } from '../recipes.js';
+import { chopStrokes, PERKS } from '../perks.js';
 import { drawDish, drawIngredient, drawIngredientIcon } from './food-art.js';
 import { SIDEBAR } from './layout.js';
 
@@ -39,10 +39,13 @@ function panel(ctx, y, h, title) {
 
 function drawNights(ctx, shift, progress) {
   const { x, w } = SIDEBAR;
-  let y = panel(ctx, SIDEBAR.y, 170, `NIGHT ${shift.night.id} OF ${NIGHTS.length}`);
+  let y = panel(ctx, SIDEBAR.y, 206, `NIGHT ${shift.night.id} OF ${NIGHTS.length}`);
   text(ctx, shift.night.name, x + 12, y + 6, 15, PALETTE.text);
   text(ctx, twistLine(shift.night), x + 12, y + 24, 11, '#ffb36b', 'left', 'normal');
-  y += 42;
+  text(ctx, `Special: ${RECIPE_BY_ID[shift.night.special].name} ×1.5`, x + 12, y + 41, 11, '#ff8f84', 'left');
+  const owned = PERKS.filter((perk) => (progress.perks ?? []).includes(perk.id)).map((perk) => perk.name.split(' ').pop());
+  text(ctx, owned.length > 0 ? `Upgrades: ${owned.join(', ')}` : 'Upgrades: none yet', x + 12, y + 58, 11, owned.length > 0 ? '#8ff0a4' : 'rgba(255,240,220,0.45)', 'left', 'normal');
+  y += 78;
   for (const night of NIGHTS) {
     const current = night.id === shift.night.id;
     const done = (progress.stars[night.id] ?? 0) > 0;
@@ -60,7 +63,7 @@ function drawNights(ctx, shift, progress) {
 /** The most urgent ticket, and each thing its dish still needs with how to prep it. */
 function drawNextUp(ctx, world) {
   const { x, w } = SIDEBAR;
-  let y = panel(ctx, SIDEBAR.y + 176, 120, 'NEXT UP');
+  let y = panel(ctx, SIDEBAR.y + 212, 108, 'NEXT UP');
   const next = nextUp(world);
   if (next === null) {
     text(ctx, 'No tickets yet:', x + 12, y + 8, 12, 'rgba(255,240,220,0.7)', 'left', 'normal');
@@ -86,7 +89,7 @@ function drawNextUp(ctx, world) {
 /** What the chef carries, and what it needs next (or which dish it is on its way to be). */
 function drawHands(ctx, world) {
   const { x } = SIDEBAR;
-  const y = panel(ctx, SIDEBAR.y + 302, 72, 'IN HAND') + 15;
+  const y = panel(ctx, SIDEBAR.y + 326, 66, 'IN HAND') + 13;
   const held = world.chef.held;
   if (held === null) {
     text(ctx, 'Empty: grab from a crate', x + 12, y, 12, 'rgba(255,240,220,0.7)', 'left', 'normal');
@@ -133,7 +136,7 @@ function keyIcon(ctx, kind, x, y) {
 
 function drawKey(ctx) {
   const { x } = SIDEBAR;
-  let y = panel(ctx, SIDEBAR.y + 380, SIDEBAR.h - 380, 'KITCHEN KEY') + 2;
+  let y = panel(ctx, SIDEBAR.y + 398, SIDEBAR.h - 398, 'KITCHEN KEY');
   const rows = [
     ['pips', `board: ${chopStrokes()} chops`],
     ['ring', 'cooking by itself'],
@@ -141,13 +144,12 @@ function drawKey(ctx) {
     ['amber', 'done: take it off'],
     ['red', 'about to burn!'],
     ['dash', 'where your food goes'],
-    ['check', 'already in the dish'],
     ['vip', 'VIP: double pay'],
   ];
   for (const [kind, words] of rows) {
     keyIcon(ctx, kind, x + 20, y + 4);
     text(ctx, words, x + 36, y + 4, 11.5, PALETTE.text, 'left', 'normal');
-    y += 18.5;
+    y += 18;
   }
 }
 
