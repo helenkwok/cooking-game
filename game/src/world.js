@@ -79,9 +79,11 @@ export function createWorld(random) {
     const arrived = moveChef(world.chef, world.stations, control.dx, control.dy, dt);
     if (arrived !== null) interact(world, arrived);
 
-    // Holding the chop button keeps the knife going on the board in reach.
+    // Holding the chop button keeps the knife going on the board in reach (with the mouse, only
+    // the board that was clicked: walking past another one never chops it).
     const board = control.chopHeld ? stationInReach(world.chef, world.stations) : null;
-    if (board !== null && board.type === BOARD && world.chef.held === null && board.item !== null) {
+    const meant = board !== null && (!control.chopBoard || control.chopBoard === board.id);
+    if (meant && board.type === BOARD && world.chef.held === null && board.item !== null) {
       if (world.holdChop !== board.id) {
         world.holdChop = board.id;
         world.holdClock = 0;

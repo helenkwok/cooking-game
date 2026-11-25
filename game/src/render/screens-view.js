@@ -133,16 +133,18 @@ function drawStar(ctx, x, y, r, filled, time) {
   ctx.restore();
 }
 
-const VERDICTS = ['The lanterns flicker out early…', 'A decent night at the market', 'The queue went round the block!', 'Legend of the night market!'];
+const VERDICTS = ['A quiet night at the market…', 'A decent night at the market', 'The queue went round the block!', 'Legend of the night market!'];
 
-export function drawResults(ctx, shift, best, time, servedDishes) {
+/** `ready` is false for the moment the card holds before it takes a key. */
+export function drawResults(ctx, shift, best, time, servedDishes, ready) {
   dim(ctx, 0.62);
   roundRect(ctx, 300, 70, 680, 580, 20, '#f6ecd8');
   roundRect(ctx, 300, 70, 680, 86, 20, '#7d3a28');
   text(ctx, shift.closedEarly ? 'STALL CLOSED' : 'LAST LANTERN OUT', 640, 113, 38, '#ffe1a6');
   const stars = starsFor(shift.coins);
   for (let i = 0; i < 3; i += 1) drawStar(ctx, 540 + i * 100, 208, i === 1 ? 44 : 36, i < stars, time);
-  text(ctx, VERDICTS[stars], 640, 266, 20, PALETTE.ink, 'center', 'italic bold');
+  const verdict = shift.closedEarly && stars === 0 ? 'The lanterns flicker out early…' : VERDICTS[stars];
+  text(ctx, verdict, 640, 266, 20, PALETTE.ink, 'center', 'italic bold');
   ctx.font = `bold 46px ${FONT}`;
   const coinsWidth = ctx.measureText(`${shift.coins}`).width;
   ctx.font = `normal 18px ${FONT}`;
@@ -169,8 +171,10 @@ export function drawResults(ctx, shift, best, time, servedDishes) {
   });
   const next = SHIFT.stars.find((needed) => needed > shift.coins);
   text(ctx, next ? `${next - shift.coins} more coins for the next star` : 'Every star earned!', 640, 590, 15, PALETTE.inkSoft, 'center', 'normal');
-  const blink = 0.6 + 0.4 * Math.sin(time * 4);
-  ctx.globalAlpha = blink;
-  text(ctx, 'Space or click to cook another night', 640, 624, 20, '#7d3a28');
-  ctx.globalAlpha = 1;
+  if (ready) {
+    const blink = 0.6 + 0.4 * Math.sin(time * 4);
+    ctx.globalAlpha = blink;
+    text(ctx, 'Space or click to cook another night', 640, 624, 20, '#7d3a28');
+    ctx.globalAlpha = 1;
+  }
 }

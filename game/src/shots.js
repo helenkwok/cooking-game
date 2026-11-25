@@ -139,8 +139,8 @@ function stageLastCall(world, fx) {
   work(world, 'board-a');
   work(world, 'assembly-2');
   // Running the feast from the island round to the pass (the route shows as a dotted trail).
-  world.chef.x = 760;
-  world.chef.y = 312;
+  world.chef.x = 770;
+  world.chef.y = 338;
   world.chef.target = 'pass';
   world.chef.moving = true;
   world.chef.walk = 1.2;
@@ -156,7 +156,8 @@ function stageLastCall(world, fx) {
 }
 
 function stageResults(world) {
-  setNight(world, 240, { coins: 472, served: 16, missed: 1, combo: 0, bestCombo: 6 });
+  // A strong two-star night: what a player who keeps the stove busy really takes home.
+  setNight(world, 240, { coins: 352, served: 12, missed: 1, combo: 0, bestCombo: 4 });
   world.shift.over = true;
   const served = [
     ['noodles', 'broth', 'egg', 'scallion'],
@@ -166,7 +167,7 @@ function stageResults(world) {
     ['broth', 'egg', 'tofu', 'scallion'],
     ['noodles', 'broth', 'pork', 'egg', 'mushroom', 'scallion'],
   ];
-  return { screen: SCREEN_OVER, time: 0.4, best: 431, servedDishes: served };
+  return { screen: SCREEN_OVER, time: 2.4, best: 318, servedDishes: served };
 }
 
 /** Stage the named scene on `world` (and `fx`); returns { screen, time, best, servedDishes }. */

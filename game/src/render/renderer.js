@@ -91,7 +91,7 @@ export function createRenderer(canvas) {
 
     if (screen === SCREEN_TITLE) drawTitle(ctx, time, ui.best);
     else if (screen === SCREEN_PAUSED) drawPaused(ctx);
-    else if (screen === SCREEN_OVER) drawResults(ctx, world.shift, ui.best, time, ui.servedDishes);
+    else if (screen === SCREEN_OVER) drawResults(ctx, world.shift, ui.best, time, ui.servedDishes, ui.ready ?? true);
     ctx.restore();
   }
 

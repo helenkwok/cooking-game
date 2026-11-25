@@ -48,10 +48,11 @@ export function createStations() {
   list.push(station('board-a', BOARD, 40, 276, 132, 104, 'left'));
   list.push(station('board-b', BOARD, 40, 398, 132, 104, 'left'));
   list.push(station('bin', BIN, 56, 524, 100, 64, 'left'));
-  list.push(station('pot-a', POT, 1108, 258, 132, 92, 'right'));
-  list.push(station('pot-b', POT, 1108, 356, 132, 92, 'right'));
-  list.push(station('griddle-a', GRIDDLE, 1108, 456, 132, 82, 'right'));
-  list.push(station('griddle-b', GRIDDLE, 1108, 540, 132, 82, 'right'));
+  // The stove column fits between the back counter and the front counter's edge (y 596).
+  list.push(station('pot-a', POT, 1108, 252, 132, 86, 'right'));
+  list.push(station('pot-b', POT, 1108, 340, 132, 86, 'right'));
+  list.push(station('griddle-a', GRIDDLE, 1108, 430, 132, 78, 'right'));
+  list.push(station('griddle-b', GRIDDLE, 1108, 512, 132, 78, 'right'));
   list.push(station('shelf', SHELF, 226, 606, 116, 88, 'front'));
   ['1', '2', '3'].forEach((n, index) => {
     list.push(station(`assembly-${n}`, ASSEMBLY, 372 + index * 140, 604, 124, 92, 'front', { dish: [] }));

@@ -370,7 +370,7 @@ function dishTag(contents, recipe, wanted) {
 }
 
 function drawPass(ctx, s, time, display) {
-  label(ctx, 'PASS', s.x + 22, s.y + 18, 13, PALETTE.ink, 'left');
+  label(ctx, 'PASS · SERVE HERE', s.x + 14, s.y + s.h - 14, 12, PALETTE.inkSoft, 'left');
   // The service bell.
   ctx.beginPath();
   ctx.arc(s.x + s.w - 30, s.y + 30, 16, Math.PI, TAU);

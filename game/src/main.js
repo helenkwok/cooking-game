@@ -202,7 +202,7 @@ function runGame() {
       while (accumulator >= STEP && screen === SCREEN_PLAY) {
         const dir = input.direction();
         const chopHeld = input.useHeld() || mouseChop !== null;
-        world.step(STEP, { dx: dir.dx, dy: dir.dy, chopHeld, chopRate: COOK.holdChopRate });
+        world.step(STEP, { dx: dir.dx, dy: dir.dy, chopHeld, chopRate: COOK.holdChopRate, chopBoard: input.useHeld() ? null : mouseChop });
         if (!warnedLastSeconds && secondsLeft(world.shift) <= 30) {
           warnedLastSeconds = true;
           fx.banner = { message: '30 SECONDS', sub: 'Get those last bowls out!', life: 0 };
@@ -225,7 +225,7 @@ function runGame() {
     }
     audio.tick();
     const hover = input.pointer.inside ? stationAt(world.stations, input.pointer.x, input.pointer.y) : null;
-    renderer.draw(world, screen, { fx, time: clock, hover, best, servedDishes });
+    renderer.draw(world, screen, { fx, time: clock, hover, best, servedDishes, ready: clock - overAt > 1.2 });
   }
 
   // Leaving the tab pauses a running service rather than letting tickets run out unseen.

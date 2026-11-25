@@ -40,6 +40,7 @@ export function createInput(canvas, toStage) {
   });
 
   canvas.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return; // the left button only: right-click does nothing
     const p = toStage(e.clientX, e.clientY);
     pointer.x = p.x;
     pointer.y = p.y;
