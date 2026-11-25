@@ -9,6 +9,7 @@ export const PERKS = [
   { id: 'pans', name: 'Heavy Pans', words: 'food burns 50% later', cost: 240 },
   { id: 'lanterns', name: 'Paper Lanterns', words: 'diners wait 15% longer', cost: 300 },
   { id: 'sign', name: 'Tip Jar Sign', words: 'tips paid 50% bigger', cost: 360 },
+  { id: 'decor', name: 'Festival Decor', words: 'bunting and lanterns: +2 tip a dish', cost: 420 },
 ];
 
 const owned = new Set();
@@ -24,6 +25,8 @@ export const perfectWindow = () => (owned.has('ladle') ? 4 : COOK.perfect);
 export const graceFor = (pot) => (pot ? COOK.boilGrace : COOK.searGrace) * (owned.has('pans') ? 1.5 : 1);
 export const patienceBoost = () => (owned.has('lanterns') ? 1.15 : 1);
 export const tipShare = () => SCORE.tipShare * (owned.has('sign') ? 1.5 : 1);
+export const decorTip = () => (owned.has('decor') ? 2 : 0);
+export const decorated = () => owned.has('decor');
 
 /** Buy upgrade `index` with banked coins; the reason it can't be bought, or null when it was. */
 export function buyPerk(progress, index) {

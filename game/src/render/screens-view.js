@@ -175,7 +175,7 @@ const VERDICTS = ['A quiet night at the market…', 'A decent night at the marke
  * is { best, opened } from the campaign record.
  */
 /** Where the results card's upgrade rows sit (stage coordinates), for drawing and clicks. */
-export const SHOP_ROW = { x: 664, y: 222, w: 424, h: 56, gap: 6 };
+export const SHOP_ROW = { x: 664, y: 220, w: 424, h: 47, gap: 5 };
 
 /** The upgrade row under a stage point (its index), or -1. */
 export function perkRowAt(x, y) {
@@ -245,7 +245,7 @@ function drawShop(ctx, progress, outcome, time) {
   ctx.font = `bold 16px ${FONT}`;
   drawCoin(ctx, r.x + r.w - 18 - ctx.measureText(`${progress.bank} banked`).width, 180, 10);
   text(ctx, `${progress.bank} banked`, r.x + r.w - 4, 181, 16, '#b07a12', 'right');
-  text(ctx, 'Every night’s coins bank here: 1–5 or click to buy', r.x + 4, 203, 12.5, PALETTE.inkSoft, 'left', 'normal');
+  text(ctx, 'Every night’s coins bank here: 1–6 or click to buy', r.x + 4, 203, 12.5, PALETTE.inkSoft, 'left', 'normal');
   PERKS.forEach((perk, i) => {
     const y = r.y + i * (r.h + r.gap);
     const have = progress.perks.includes(perk.id);
@@ -259,14 +259,14 @@ function drawShop(ctx, progress, outcome, time) {
       ctx.roundRect(r.x + 1, y + 1, r.w - 2, r.h - 2, 10);
       ctx.stroke();
     }
-    roundRect(ctx, r.x + 10, y + 14, 28, 28, 7, have ? PALETTE.good : '#7d3a28');
-    text(ctx, have ? '✓' : String(i + 1), r.x + 24, y + 29, 15, '#fff', 'center');
-    text(ctx, perk.name, r.x + 50, y + 19, 16, have || afford ? PALETTE.ink : PALETTE.inkSoft, 'left');
-    text(ctx, perk.words, r.x + 50, y + 39, 13, PALETTE.inkSoft, 'left', 'normal');
-    if (have) text(ctx, 'OWNED', r.x + r.w - 14, y + 29, 14, '#2e7d46', 'right');
+    roundRect(ctx, r.x + 10, y + 10, 27, 27, 7, have ? PALETTE.good : '#7d3a28');
+    text(ctx, have ? '✓' : String(i + 1), r.x + 23, y + 24, 15, '#fff', 'center');
+    text(ctx, perk.name, r.x + 50, y + 15, 15, have || afford ? PALETTE.ink : PALETTE.inkSoft, 'left');
+    text(ctx, perk.words, r.x + 50, y + 33, 12.5, PALETTE.inkSoft, 'left', 'normal');
+    if (have) text(ctx, 'OWNED', r.x + r.w - 14, y + 24, 14, '#2e7d46', 'right');
     else {
-      drawCoin(ctx, r.x + r.w - 62, y + 28, 9);
-      text(ctx, String(perk.cost), r.x + r.w - 14, y + 29, 16, afford ? '#b07a12' : PALETTE.inkSoft, 'right');
+      drawCoin(ctx, r.x + r.w - 62, y + 23, 9);
+      text(ctx, String(perk.cost), r.x + r.w - 14, y + 24, 16, afford ? '#b07a12' : PALETTE.inkSoft, 'right');
     }
   });
   if (outcome?.note) text(ctx, outcome.note, r.x + r.w / 2, 540, 13.5, outcome.bought >= 0 ? '#2e7d46' : '#a8231d', 'center');

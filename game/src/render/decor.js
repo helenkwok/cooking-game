@@ -233,6 +233,34 @@ function shadeLayer() {
   return nightShade;
 }
 
+/** Festival Decor: bunting strung across the stall and a row of paper lanterns along the back. */
+export function drawBunting(ctx, time) {
+  const colours = ['#e5534b', '#f2a541', '#7cb342', '#8fb8de', '#b07cd8', '#ffd25a'];
+  for (const [y0, sag] of [[244, 22], [250, 16]]) {
+    ctx.strokeStyle = 'rgba(40,20,20,0.7)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(150, y0);
+    ctx.quadraticCurveTo(640, y0 + sag * 2, 1130, y0);
+    ctx.stroke();
+    for (let k = 1; k < 24; k += 1) {
+      const t = k / 24;
+      const x = (1 - t) * (1 - t) * 150 + 2 * (1 - t) * t * 640 + t * t * 1130;
+      const y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * (y0 + sag * 2) + t * t * y0;
+      const sway = Math.sin(time * 2 + k) * 2;
+      ctx.beginPath();
+      ctx.moveTo(x - 9, y);
+      ctx.lineTo(x + 9, y);
+      ctx.lineTo(x + sway, y + 20);
+      ctx.closePath();
+      ctx.fillStyle = colours[(k + (y0 === 250 ? 3 : 0)) % colours.length];
+      ctx.fill();
+    }
+    if (y0 === 244) break;
+  }
+  for (const x of [300, 520, 760, 980]) drawChochin(ctx, x, 286, time);
+}
+
 export function drawVignette(ctx, time = 0) {
   const shade = shadeLayer();
   if (shade !== null) ctx.drawImage(shade, 0, 0);

@@ -2,7 +2,7 @@
 // ask for, VIP tickets on the critic's night, and the takings. Pressure grows by asking for more
 // and harder dishes faster, never by adding chores.
 import { SCORE, SHIFT } from './config.js';
-import { patienceBoost, tipShare } from './perks.js';
+import { decorTip, patienceBoost, tipShare } from './perks.js';
 import { nightById, TWIST_CRITIC } from './nights.js';
 import { RECIPE_BY_ID } from './recipes.js';
 
@@ -111,7 +111,7 @@ export function payForServe(shift, ticket) {
   else shift.combo = 0;
   shift.bestCombo = Math.max(shift.bestCombo, shift.combo);
   const price = priceOf(ticket);
-  const tip = Math.round(price * tipShare() * freshness);
+  const tip = Math.round(price * tipShare() * freshness) + decorTip();
   const bonus = shift.combo > 1 ? (shift.combo - 1) * SCORE.comboBonus : 0;
   const earned = price + tip + bonus;
   shift.coins += earned;

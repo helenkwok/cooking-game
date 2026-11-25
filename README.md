@@ -26,7 +26,7 @@ Tickets clip onto the order board, and each one is a dish with a patience bar. T
 - **Takeaway orders**: from night 2, once the rush starts, some tickets are TO GO; a delivery rider waits on a scooter at the end of the counter, a little longer, and pays a packing fee.
 - **Side dishes**: Tofu Bites and Soy Egg, quick two-ingredient plates that slot between the bowls from night 2.
 - **Tonight's special**: one dish each night pays half again, marked with a red ribbon on its ticket.
-- **Stall upgrades**: every night's coins go into the bank, and the results card sells five lasting upgrades (Sharp Knife, Gold Ladle, Heavy Pans, Paper Lanterns, Tip Jar Sign).
+- **Stall upgrades**: every night's coins go into the bank, and the results card sells six lasting upgrades (Sharp Knife, Gold Ladle, Heavy Pans, Paper Lanterns, Tip Jar Sign, and Festival Decor, which hangs bunting and lanterns over the stall).
 - **Tips for speed and combos for streaks**. You get five hearts, and a customer who walks out costs one. Each night has its own stars and best score.
 
 ## Controls

@@ -129,7 +129,7 @@ function stageService(world, fx) {
     p.x += p.vx * 0.12;
     p.y += p.vy * 0.12;
   }
-  return { screen: SCREEN_PLAY, time: 12.3, servedDishes: [], progress: { ...MIDWAY, perks: ['ladle', 'pans'] } };
+  return { screen: SCREEN_PLAY, time: 12.3, servedDishes: [], progress: { ...MIDWAY, perks: ['ladle', 'pans', 'decor'] } };
 }
 
 /** Last Call on Midnight Market: big orders, a pot about to boil over, a Midnight Feast run to the pass. */

@@ -9,7 +9,8 @@ import { phaseIndex } from '../shift.js';
 import { heldTag, ticketProgress, usefulStations } from '../hints.js';
 import { drawChef, drawHeldTag, drawRoute } from './chef-view.js';
 import { drawDiners, drawStreet } from './customers-view.js';
-import { drawCondiments, drawCornerProps, drawNoren, drawTipJar, drawVignette } from './decor.js';
+import { drawBunting, drawCondiments, drawCornerProps, drawNoren, drawTipJar, drawVignette } from './decor.js';
+import { decorated } from '../perks.js';
 import { drawFloaters, drawParticles } from './effects.js';
 import { drawBanner, drawOrderBoard, drawServicePanel } from './hud-view.js';
 import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations, drawStringLights } from './kitchen-view.js';
@@ -80,6 +81,7 @@ export function createRenderer(canvas) {
     drawDiners(ctx, world.orders, time);
     if (tag !== null) drawHeldTag(ctx, world.chef, tag);
     drawStringLights(ctx, time, rush);
+    if (decorated()) drawBunting(ctx, time);
     drawNoren(ctx, time);
     drawVignette(ctx, time);
     drawParticles(ctx, ui.fx);
