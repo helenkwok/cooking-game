@@ -6,16 +6,16 @@ import { createChef, moveChef, resetChef, stationInReach } from './chef.js';
 import { chopAt, interact, updateCookers } from './kitchen.js';
 import { addTicket, createOrders, fillTicket, openTickets, ticketFor, updateTickets } from './orders.js';
 import { matchRecipe } from './recipes.js';
-import { chooseRecipe, createShift, loseHeart, patienceScale, payForServe, phaseIndex, ticketInterval } from './shift.js';
+import { chooseRecipe, createShift, loseHeart, patienceScale, payForServe, phaseIndex, rollVip, ticketInterval } from './shift.js';
 import { BOARD, createStations } from './stations.js';
 
-export function createWorld(random) {
+export function createWorld(random, nightId = 1) {
   const world = {
     random,
     stations: createStations(),
     chef: createChef(),
     orders: createOrders(),
-    shift: createShift(),
+    shift: createShift(nightId),
     events: [],
     lastRecipe: null,
     /** The station the chef is chopping at by holding the button, and the stroke clock. */
@@ -23,11 +23,12 @@ export function createWorld(random) {
     holdClock: 0,
   };
 
-  world.reset = () => {
+  /** A fresh kitchen for night `nightId` (1 to 5). */
+  world.reset = (nightId = world.shift.night.id) => {
     world.stations = createStations();
     resetChef(world.chef);
     world.orders = createOrders();
-    world.shift = createShift();
+    world.shift = createShift(nightId);
     world.events = [];
     world.lastRecipe = null;
     world.holdChop = null;
@@ -45,7 +46,7 @@ export function createWorld(random) {
     }
     fillTicket(ticket);
     const pay = payForServe(world.shift, ticket);
-    world.events.push({ type: 'serve', x: s.cx, y: s.cy, ticket: ticket.id, recipe: ticket.recipe.id, contents: [...contents], ...pay, combo: world.shift.combo });
+    world.events.push({ type: 'serve', x: s.cx, y: s.cy, ticket: ticket.id, recipe: ticket.recipe.id, contents: [...contents], ...pay, combo: world.shift.combo, vip: ticket.vip });
     return true;
   };
 
@@ -104,8 +105,8 @@ export function createWorld(random) {
       if (openTickets(world.orders).length < SHIFT.maxTickets) {
         const recipe = chooseRecipe(shift, world.random, world.lastRecipe);
         world.lastRecipe = recipe.id;
-        const ticket = addTicket(world.orders, recipe, patienceScale(shift));
-        world.events.push({ type: 'ticket', ticket: ticket.id, recipe: recipe.id, x: 0, y: 0 });
+        const ticket = addTicket(world.orders, recipe, patienceScale(shift), rollVip(shift, world.random));
+        world.events.push({ type: 'ticket', ticket: ticket.id, recipe: recipe.id, vip: ticket.vip, x: 0, y: 0 });
       }
       shift.nextTicket = ticketInterval(shift) * (0.85 + world.random() * 0.3);
     }
@@ -125,8 +126,8 @@ export function createWorld(random) {
       world.events.push({ type: 'phase', phase, x: 0, y: 0 });
     }
 
-    if (!shift.over && shift.time >= SHIFT.seconds) {
-      shift.time = SHIFT.seconds;
+    if (!shift.over && shift.time >= shift.seconds) {
+      shift.time = shift.seconds;
       shift.over = true;
       world.events.push({ type: 'over', x: 0, y: 0 });
     }

@@ -1,7 +1,7 @@
 // A headless playtest: a simple bot cook plays whole shifts through the game's own rules (it
 // walks to stations, works them, chops, waits on the stove, plates and serves) and reports the
 // takings, so the pacing and the star thresholds can be checked without a browser.
-//   node tools/playtest.ts [--seeds 8] [--smart]
+//   node tools/playtest.ts [--seeds 8] [--smart] [--night 1-5]
 // The plain bot works one ticket at a time. --smart starts the stove first and preps the next
 // ingredient while things cook, as a practised player does.
 import { COOK, SHIFT, STEP } from '../game/src/config.js';
@@ -14,6 +14,7 @@ import { starsFor } from '../game/src/shift.js';
 const args = process.argv.slice(2);
 const seeds = Number(args[args.indexOf('--seeds') + 1]) || 8;
 const smart = args.includes('--smart');
+const night = Number(args[args.indexOf('--night') + 1]) || 3;
 
 type World = ReturnType<typeof createWorld>;
 let burnt = 0;
@@ -98,8 +99,8 @@ function cookTicket(world: World, recipe: any, spot: any): boolean {
 }
 
 function playShift(seed: number) {
-  const world = createWorld(createRandom(seed));
-  world.reset();
+  const world = createWorld(createRandom(seed), night);
+  world.reset(night);
   while (!world.shift.over) {
     const tickets = openTickets(world.orders).sort((a: any, b: any) => a.left - b.left);
     // The most urgent ticket that can still be made in time (else the newest).
@@ -122,6 +123,6 @@ let total = 0;
 for (let seed = 1; seed <= seeds; seed += 1) {
   const shift = playShift(seed);
   total += shift.coins;
-  console.log(`seed ${seed}: ${shift.coins} coins, ${shift.served} served, ${shift.missed} lost, best combo ${shift.bestCombo}, ${starsFor(shift.coins)} stars${shift.closedEarly ? ' (closed early)' : ''}, ended at ${Math.round(shift.time)}s of ${SHIFT.seconds}`);
+  console.log(`seed ${seed}: ${shift.coins} coins, ${shift.served} served, ${shift.missed} lost, best combo ${shift.bestCombo}, ${starsFor(shift)} stars${shift.closedEarly ? ' (closed early)' : ''}, ended at ${Math.round(shift.time)}s of ${shift.seconds}`);
 }
-console.log(`${smart ? 'smart' : 'plain'} bot average: ${Math.round(total / seeds)} coins (stars at ${SHIFT.stars.join(' / ')}), ${burnt} burnt`);
+console.log(`${smart ? 'smart' : 'plain'} bot average: ${Math.round(total / seeds)} coins on night ${night}, ${burnt} burnt`);

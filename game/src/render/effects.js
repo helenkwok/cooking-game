@@ -34,8 +34,9 @@ function burst(fx, x, y, count, colours, speed, gravity, life, size) {
   }
 }
 
-function floater(fx, x, y, words, colour, size = 20) {
-  fx.floaters.push({ x, y, words, colour, size, age: 0 });
+/** Floating words; `screen` ones (by the order board) are drawn outside the kitchen view. */
+function floater(fx, x, y, words, colour, size = 20, screen = false) {
+  fx.floaters.push({ x, y, words, colour, size, age: 0, screen });
 }
 
 /** Turn this step's world events into effects; `orders` places ticket-side effects. */
@@ -74,6 +75,7 @@ export function applyEvents(fx, events, orders) {
         floater(fx, e.x, e.y - 60, `+${e.earned}`, PALETTE.coin, 30);
         if (e.tip > 0) floater(fx, e.x + 70, e.y - 30, `tip ${e.tip}`, '#ffe9a8', 15);
         if (e.combo > 1) floater(fx, e.x - 70, e.y - 30, `combo x${e.combo}`, '#8ff0a4', 17);
+        if (e.vip) floater(fx, e.x, e.y - 100, '★ VIP double pay!', PALETTE.coin, 20);
         burst(fx, e.x, e.y - 10, 22, [PALETTE.coin, '#fff2b0', '#ffb547'], 260, 500, 0.8, 5);
         fx.coinPulse = 1;
         fx.passDisplay.push({ contents: e.contents, age: 0 });
@@ -83,7 +85,7 @@ export function applyEvents(fx, events, orders) {
       case 'expire': {
         const index = orders.tickets.findIndex((t) => t.id === e.ticket);
         const slot = ticketSlot(Math.max(0, index));
-        floater(fx, slot.x + TICKET.width / 2, slot.y + TICKET.height + 20, '-1 heart', '#ff8f84', 20);
+        floater(fx, slot.x + TICKET.width / 2, slot.y + TICKET.height + 20, '-1 heart', '#ff8f84', 20, true);
         fx.shake = Math.max(fx.shake, 0.4);
         break;
       }
@@ -91,6 +93,9 @@ export function applyEvents(fx, events, orders) {
         fx.banner = e.phase === 1
           ? { message: 'NIGHT RUSH', sub: 'The market fills up: tickets come faster', life: 0 }
           : { message: 'LAST CALL', sub: 'Big orders now: finish strong', life: 0 };
+        break;
+      case 'ticket':
+        if (e.vip) fx.banner = { message: '★ VIP TICKET', sub: 'The critic is here: double pay, short wait', life: 0.4 };
         break;
       default:
     }
@@ -132,10 +137,11 @@ export function drawParticles(ctx, fx) {
   ctx.globalAlpha = 1;
 }
 
-export function drawFloaters(ctx, fx) {
+export function drawFloaters(ctx, fx, screen) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   for (const f of fx.floaters) {
+    if (f.screen !== screen) continue;
     const t = f.age / 1.1;
     ctx.globalAlpha = 1 - t * t;
     ctx.font = `bold ${f.size}px ${FONT}`;

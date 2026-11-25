@@ -5,7 +5,7 @@ import { COOK } from './config.js';
 import { chopAt, interact, updateCookers } from './kitchen.js';
 import { addTicket } from './orders.js';
 import { nextStep, RECIPE_BY_ID, STEP_BOIL, STEP_CHOP, STEP_SEAR } from './recipes.js';
-import { patienceScale } from './shift.js';
+import { patienceScale, phaseIndex } from './shift.js';
 import { applyEvents } from './render/effects.js';
 import { SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE } from './render/renderer.js';
 
@@ -70,19 +70,24 @@ function startCooking(world, kind, id, seconds, before = []) {
 }
 
 /** Clip a ticket with `fraction` of its patience left. */
-function ticket(world, id, fraction) {
-  const t = addTicket(world.orders, RECIPE_BY_ID[id], patienceScale(world.shift));
+function ticket(world, id, fraction, vip = false) {
+  const t = addTicket(world.orders, RECIPE_BY_ID[id], patienceScale(world.shift), vip);
   t.left = t.patience * fraction;
   t.age = 3;
   return t;
 }
 
-function setNight(world, time, { coins, served, missed, combo, bestCombo }) {
-  Object.assign(world.shift, { time, coins, served, missed, combo, bestCombo, hearts: 5 - missed, lastPhase: time >= 180 ? 2 : time >= 75 ? 1 : 0, nextTicket: 999 });
+function setNight(world, time, { coins, served, missed, combo, bestCombo, vipServed = 0 }) {
+  Object.assign(world.shift, { time, coins, served, missed, combo, bestCombo, vipServed, hearts: 5 - missed, nextTicket: 999 });
+  world.shift.lastPhase = phaseIndex(world.shift);
 }
 
-/** The cover: the Night Rush in full swing. */
+/** A campaign record partway through: nights 1 to 3 done, the critic's night open. */
+const MIDWAY = { unlocked: 4, best: { 1: 241, 2: 236, 3: 318 }, stars: { 1: 3, 2: 2, 3: 2 } };
+
+/** The cover: the critic's night, its rush in full swing, a gold VIP ticket on the rail. */
 function stageService(world, fx) {
+  world.reset(4);
   assemble(world, 'assembly-2', ['noodles', 'chili', 'pork', 'scallion']);
   assemble(world, 'assembly-1', ['broth', 'noodles', 'egg']);
   assemble(world, 'assembly-3', ['tofu', 'mushroom']);
@@ -105,9 +110,9 @@ function stageService(world, fx) {
   world.chef.walk = 0.6;
   // A Lantern Ramen just went out through the pass.
   world.events.length = 0;
-  setNight(world, 118, { coins: 236, served: 8, missed: 1, combo: 3, bestCombo: 4 });
+  setNight(world, 118, { coins: 236, served: 8, missed: 1, combo: 3, bestCombo: 4, vipServed: 1 });
   ticket(world, 'lantern', 0.34);
-  ticket(world, 'ember', 0.52);
+  ticket(world, 'ember', 0.52, true);
   ticket(world, 'grove', 0.74);
   ticket(world, 'griddle', 0.9);
   ticket(world, 'moon', 1);
@@ -122,11 +127,12 @@ function stageService(world, fx) {
     p.x += p.vx * 0.12;
     p.y += p.vy * 0.12;
   }
-  return { screen: SCREEN_PLAY, time: 12.3, best: 0, servedDishes: [] };
+  return { screen: SCREEN_PLAY, time: 12.3, servedDishes: [], progress: MIDWAY };
 }
 
-/** Last Call: big orders, a pot about to boil over, and the chef running a Midnight Feast to the pass. */
+/** Last Call on Midnight Market: big orders, a pot about to boil over, a Midnight Feast run to the pass. */
 function stageLastCall(world, fx) {
+  world.reset(5);
   assemble(world, 'assembly-1', ['broth', 'egg', 'tofu']);
   assemble(world, 'assembly-3', ['noodles', 'broth', 'mushroom']);
   // The feast, built on the middle mat; the chef picks it up last, once the stove is going.
@@ -152,12 +158,13 @@ function stageLastCall(world, fx) {
   ticket(world, 'grove', 0.63);
   ticket(world, 'ember', 0.8);
   ticket(world, 'feast', 0.97);
-  return { screen: SCREEN_PLAY, time: 31.7, best: 0, servedDishes: [] };
+  return { screen: SCREEN_PLAY, time: 31.7, servedDishes: [], progress: { unlocked: 5, best: { ...MIDWAY.best, 4: 342 }, stars: { ...MIDWAY.stars, 4: 2 } } };
 }
 
+/** The end of the Lantern Festival: a strong two-star night that opens the critic's night. */
 function stageResults(world) {
-  // A strong two-star night: what a player who keeps the stove busy really takes home.
-  setNight(world, 240, { coins: 352, served: 12, missed: 1, combo: 0, bestCombo: 4 });
+  world.reset(3);
+  setNight(world, 240, { coins: 318, served: 12, missed: 1, combo: 0, bestCombo: 4 });
   world.shift.over = true;
   const served = [
     ['noodles', 'broth', 'egg', 'scallion'],
@@ -167,17 +174,16 @@ function stageResults(world) {
     ['broth', 'egg', 'tofu', 'scallion'],
     ['noodles', 'broth', 'pork', 'egg', 'mushroom', 'scallion'],
   ];
-  return { screen: SCREEN_OVER, time: 2.4, best: 318, servedDishes: served };
+  return { screen: SCREEN_OVER, time: 2.4, servedDishes: served, progress: MIDWAY, outcome: { best: 0, opened: true } };
 }
 
-/** Stage the named scene on `world` (and `fx`); returns { screen, time, best, servedDishes }. */
+/** Stage the named scene on `world` (and `fx`); returns what the renderer needs to paint it. */
 export function stageShot(name, world, fx) {
-  world.reset();
   if (name === 'lastcall') return stageLastCall(world, fx);
   if (name === 'results') return stageResults(world);
   if (name === 'menu') {
     stageService(world, fx);
-    return { screen: SCREEN_TITLE, time: 2.2, best: 0, servedDishes: [] };
+    return { screen: SCREEN_TITLE, time: 2.2, servedDishes: [], progress: MIDWAY, selected: 4 };
   }
   return stageService(world, fx);
 }

@@ -2,7 +2,7 @@
 // ingredients and a patience bar that turns from green to red), the shift clock, the takings,
 // the hearts and the combo.
 import { FONT, PALETTE, SHIFT } from '../config.js';
-import { phaseIndex, secondsLeft, shiftProgress } from '../shift.js';
+import { PHASES, phaseIndex, secondsLeft, shiftProgress } from '../shift.js';
 import { drawDish, drawIngredientIcon } from './food-art.js';
 
 const TAU = Math.PI * 2;
@@ -69,9 +69,17 @@ function drawTicket(ctx, ticket, x, y, time, have) {
 
   ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.fillRect(4, 6, TICKET.width, TICKET.height);
-  roundRect(ctx, 0, 0, TICKET.width, TICKET.height, 4, urgent ? '#ffe2d6' : PALETTE.paper);
-  roundRect(ctx, 0, 0, TICKET.width, 26, 4, ticket.recipe.hue);
-  text(ctx, ticket.recipe.name, TICKET.width / 2, 14, 15, '#fffaf0');
+  if (ticket.vip) {
+    // The critic's ticket: gold card with a pulsing gold edge.
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,210,90,0.9)';
+    ctx.shadowBlur = 10 + 6 * Math.sin(time * 5);
+    roundRect(ctx, -2, -2, TICKET.width + 4, TICKET.height + 4, 6, '#e0b43c');
+    ctx.restore();
+  }
+  roundRect(ctx, 0, 0, TICKET.width, TICKET.height, 4, urgent ? '#ffe2d6' : ticket.vip ? '#fff3cf' : PALETTE.paper);
+  roundRect(ctx, 0, 0, TICKET.width, 26, 4, ticket.vip ? '#b8860b' : ticket.recipe.hue);
+  text(ctx, `${ticket.vip ? '★ ' : ''}${ticket.recipe.name}`, TICKET.width / 2, 14, 15, '#fffaf0');
   text(ctx, `#${ticket.id}`, TICKET.width / 2 + 4, TICKET.height - 33, 11, PALETTE.inkSoft, 'center', 'normal');
   drawDish(ctx, ticket.recipe.items, 42, 64, 25);
   // The ingredients, two rows of icons.
@@ -89,7 +97,7 @@ function drawTicket(ctx, ticket, x, y, time, have) {
   roundRect(ctx, 8, TICKET.height - 20, TICKET.width - 16, 12, 6, 'rgba(43,34,48,0.18)');
   roundRect(ctx, 8, TICKET.height - 20, Math.max(6, (TICKET.width - 16) * fraction), 12, 6, patienceColour(fraction));
   text(ctx, `${Math.ceil(ticket.left)}s`, TICKET.width - 12, TICKET.height - 33, 12, urgent ? PALETTE.bad : PALETTE.inkSoft, 'right');
-  text(ctx, `${ticket.recipe.price}c`, 12, TICKET.height - 33, 12, PALETTE.inkSoft, 'left');
+  text(ctx, `${ticket.recipe.price * (ticket.vip ? 2 : 1)}c`, 12, TICKET.height - 33, 12, ticket.vip ? '#b8860b' : PALETTE.inkSoft, 'left');
   if (ticket.leaving > 0) {
     ctx.save();
     ctx.translate(TICKET.width / 2, 70);
@@ -172,13 +180,13 @@ export function drawServicePanel(ctx, shift, time, coinPulse) {
   const seconds = Math.ceil(secondsLeft(shift));
   text(ctx, `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`, cx, cy + 1, 20, lowTime ? '#ff9b8f' : PALETTE.text);
   // Phase pips under the dial.
-  SHIFT.phases.forEach((phase, i) => {
+  PHASES.forEach((phase, i) => {
     ctx.beginPath();
     ctx.arc(cx - 16 + i * 16, cy + 56, 5, 0, TAU);
     ctx.fillStyle = i <= phaseIndex(shift) ? PALETTE.lantern : 'rgba(255,255,255,0.15)';
     ctx.fill();
   });
-  const phase = SHIFT.phases[phaseIndex(shift)].name;
+  const phase = PHASES[phaseIndex(shift)].name;
   text(ctx, phase.toUpperCase(), 1102, 26, 14, phaseIndex(shift) === 1 ? '#ffb070' : 'rgba(255,240,220,0.75)', 'left');
   // Takings.
   const pulse = 1 + coinPulse * 0.25;

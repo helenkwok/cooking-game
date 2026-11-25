@@ -1,20 +1,24 @@
 // Boot and the one loop: input is read every frame, the world advances in fixed 1/60 s steps,
 // world events become sounds and effects, and the renderer paints. The game moves between four
-// screens: title, play, paused and the end-of-night results.
+// screens: the title (with the five-night picker), play, paused and the end-of-night results.
 //
-// ?seed=N fixes the tickets. ?shot=service|menu|lastcall|results stages that scene through the
-// real rules instead of running the loop, paints it and sets window.__shotReady for a screenshot.
-import { BEST_KEY, COOK, STEP } from './config.js';
+// ?seed=N fixes the tickets; ?night=N opens on that night. ?shot=service|lastcall|menu|results
+// stages that scene through the real rules instead of running the loop, paints it and sets
+// window.__shotReady for a screenshot.
+import { COOK, STEP } from './config.js';
 import { createAudio } from './audio.js';
 import { chopAt } from './kitchen.js';
+import { NIGHTS } from './nights.js';
+import { loadProgress, recordNight } from './progress.js';
 import { nextStep, STEP_CHOP } from './recipes.js';
 import { createRandom } from './random.js';
-import { phaseIndex, secondsLeft } from './shift.js';
+import { phaseIndex, secondsLeft, starsFor } from './shift.js';
 import { BOARD, stationAt } from './stations.js';
 import { stationInReach } from './chef.js';
 import { createWorld } from './world.js';
-import { createInput, KEY_CONFIRM, KEY_CRATE, KEY_MUTE, KEY_PAUSE, KEY_TOSS, KEY_USE } from './input.js';
+import { createInput, KEY_CONFIRM, KEY_CRATE, KEY_LEFT, KEY_MUTE, KEY_PAUSE, KEY_RETRY, KEY_RIGHT, KEY_TOSS, KEY_USE } from './input.js';
 import { applyEvents, createEffects, updateEffects } from './render/effects.js';
+import { stageToKitchen } from './render/layout.js';
 import { createRenderer, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE } from './render/renderer.js';
 import { stageShot } from './shots.js';
 
@@ -55,27 +59,20 @@ const world = createWorld(createRandom(seed));
 const renderer = createRenderer(canvas);
 const fx = createEffects();
 
-function readBest() {
-  try {
-    return Number.parseInt(window.localStorage.getItem(BEST_KEY) ?? '0', 10) || 0;
-  } catch {
-    return 0;
+/** Where the title screen's night cards sit (stage coordinates), for clicks. */
+function nightCardAt(x, y) {
+  for (let i = 0; i < NIGHTS.length; i += 1) {
+    const cx = 146 + i * 200;
+    if (x >= cx && x <= cx + 188 && y >= 392 && y <= 504) return NIGHTS[i].id;
   }
-}
-
-function saveBest(value) {
-  try {
-    window.localStorage.setItem(BEST_KEY, String(value));
-  } catch {
-    // Storage can be off (private windows): the best night then lasts this visit only.
-  }
+  return null;
 }
 
 function runShot(name) {
   const scene = stageShot(name, world, fx);
   let painted = 0;
   function paint() {
-    renderer.draw(world, scene.screen, { fx, time: scene.time, hover: null, best: scene.best, servedDishes: scene.servedDishes, hints: true });
+    renderer.draw(world, scene.screen, { fx, time: scene.time, hover: null, servedDishes: scene.servedDishes, hints: true, progress: scene.progress, selected: scene.selected, outcome: scene.outcome });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else window.__shotReady = true;
@@ -86,8 +83,11 @@ function runShot(name) {
 function runGame() {
   const audio = createAudio();
   const input = createInput(canvas, renderer.toStage);
+  const progress = loadProgress();
+  const nightParam = Number.parseInt(params.get('night') ?? '', 10);
+  let selected = Number.isInteger(nightParam) && nightParam >= 1 && nightParam <= NIGHTS.length ? nightParam : progress.unlocked;
   let screen = SCREEN_TITLE;
-  let best = readBest();
+  let outcome = null;
   let accumulator = 0;
   let last = performance.now();
   let clock = 0;
@@ -105,8 +105,9 @@ function runGame() {
     status.textContent = message;
   }
 
-  function startShift() {
-    world.reset();
+  function startNight(nightId) {
+    selected = nightId;
+    world.reset(nightId);
     Object.assign(fx, createEffects());
     servedDishes = [];
     warnedLastSeconds = false;
@@ -116,23 +117,24 @@ function runGame() {
     audio.unlock();
     audio.startMusic();
     audio.setIntensity(0);
-    announce('The stall is open. Tickets will arrive on the board.');
+    announce(`Night ${nightId}: ${world.shift.night.name}. The stall is open.`);
   }
 
-  function endShift() {
+  function endNight() {
     screen = SCREEN_OVER;
     overAt = clock;
     audio.stopMusic();
-    if (world.shift.coins > best) {
-      best = world.shift.coins;
-      saveBest(best);
-    }
-    announce(`Night over. ${world.shift.coins} coins, ${world.shift.served} dishes served.`);
+    const night = world.shift.night.id;
+    const best = progress.best[night] ?? 0;
+    const opened = recordNight(progress, night, world.shift.coins, starsFor(world.shift));
+    outcome = { best, opened };
+    announce(`Night over. ${world.shift.coins} coins, ${world.shift.served} dishes served.${opened ? ' A new night is open.' : ''}`);
   }
 
   /** A click in play: chop at a board in reach, else walk to the clicked station and work it. */
-  function clickStation(x, y) {
-    const s = stationAt(world.stations, x, y);
+  function clickStation(sx, sy) {
+    const p = stageToKitchen(sx, sy);
+    const s = stationAt(world.stations, p.x, p.y);
     if (s === null) return;
     const reach = stationInReach(world.chef, world.stations);
     if (s === reach && s.type === BOARD && world.chef.held === null && s.item !== null && nextStep(s.item) === STEP_CHOP) {
@@ -145,6 +147,29 @@ function runGame() {
     world.walkTo(s);
   }
 
+  function titlePress(press) {
+    if (press.type === KEY_CRATE && press.index < NIGHTS.length) {
+      if (press.index + 1 <= progress.unlocked) selected = press.index + 1;
+    } else if (press.type === KEY_LEFT) selected = Math.max(1, selected - 1);
+    else if (press.type === KEY_RIGHT) selected = Math.min(progress.unlocked, selected + 1);
+    else if (press.type === KEY_CONFIRM) startNight(selected);
+    else if (press.type === 'click') {
+      const card = nightCardAt(press.x, press.y);
+      if (card !== null && card <= progress.unlocked && card !== selected) selected = card;
+      else startNight(selected);
+    }
+  }
+
+  function resultsPress(press) {
+    // The card holds a moment, so a last frantic Space doesn't skip it.
+    if (clock - overAt <= 1.2) return;
+    const night = world.shift.night.id;
+    const canAdvance = starsFor(world.shift) > 0 && night < NIGHTS.length;
+    if (press.type === KEY_RETRY) startNight(night);
+    else if (press.type === KEY_CONFIRM || press.type === 'click') startNight(canAdvance ? night + 1 : night);
+    else if (press.type === KEY_PAUSE) screen = SCREEN_TITLE;
+  }
+
   function handlePresses() {
     for (const press of input.takePresses()) {
       if (press.type === KEY_MUTE) {
@@ -152,10 +177,12 @@ function runGame() {
         announce(audio.toggleMute() ? 'Sound off.' : 'Sound on.');
         continue;
       }
-      if (screen === SCREEN_TITLE || screen === SCREEN_OVER) {
-        // The results card holds a moment, so a last frantic Space doesn't skip it.
-        const settled = screen === SCREEN_TITLE || clock - overAt > 1.2;
-        if (settled && (press.type === KEY_CONFIRM || press.type === 'click')) startShift();
+      if (screen === SCREEN_TITLE) {
+        titlePress(press);
+        continue;
+      }
+      if (screen === SCREEN_OVER) {
+        resultsPress(press);
         continue;
       }
       if (screen === SCREEN_PAUSED) {
@@ -183,7 +210,7 @@ function runGame() {
       if (e.type === 'serve') {
         servedDishes.push(e.contents);
         announce(`Served for ${e.earned} coins.`);
-      } else if (e.type === 'ticket') announce('New ticket on the board.');
+      } else if (e.type === 'ticket') announce(e.vip ? 'A VIP ticket: double pay, short wait.' : 'New ticket on the board.');
       else if (e.type === 'expire') announce('A customer walked out.');
     }
     applyEvents(fx, world.events, world.orders);
@@ -216,7 +243,7 @@ function runGame() {
         drainEvents();
         updateEffects(fx, STEP);
         accumulator -= STEP;
-        if (world.shift.over) endShift();
+        if (world.shift.over) endNight();
       }
       audio.setIntensity(phaseIndex(world.shift) >= 1 ? 1 : 0);
     } else {
@@ -224,8 +251,12 @@ function runGame() {
       updateEffects(fx, dt);
     }
     audio.tick();
-    const hover = input.pointer.inside ? stationAt(world.stations, input.pointer.x, input.pointer.y) : null;
-    renderer.draw(world, screen, { fx, time: clock, hover, best, servedDishes, ready: clock - overAt > 1.2 });
+    let hover = null;
+    if (input.pointer.inside) {
+      const p = stageToKitchen(input.pointer.x, input.pointer.y);
+      hover = stationAt(world.stations, p.x, p.y);
+    }
+    renderer.draw(world, screen, { fx, time: clock, hover, servedDishes, ready: clock - overAt > 1.2, progress, selected, outcome });
   }
 
   // Leaving the tab pauses a running service rather than letting tickets run out unseen.
@@ -239,7 +270,7 @@ function runGame() {
   // ?debug exposes the live world to the smoke test (tools/smoke.ts); nothing reads it otherwise.
   if (params.has('debug')) window.__world = world;
 
-  announce('Steam Lantern. Press Space or click to open the stall.');
+  announce('Steam Lantern. Choose a night with 1 to 5, then press Space or click to open the stall.');
   requestAnimationFrame(frame);
 }
 

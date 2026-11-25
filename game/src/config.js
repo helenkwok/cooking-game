@@ -20,25 +20,13 @@ export const CHEF = {
   reach: 78,
 };
 
+/** What every night shares; each night's own length, menu, pace and star bars are in nights.js. */
 export const SHIFT = {
-  /** Length of one service, in seconds. */
-  seconds: 240,
   hearts: 5,
-  /** Phase boundaries in seconds from the opening bell. */
-  phases: [
-    { name: 'Evening', from: 0 },
-    { name: 'Night Rush', from: 75 },
-    { name: 'Last Call', from: 180 },
-  ],
-  /** Seconds between new tickets at the start and at the end of the shift. */
-  spawnStart: 27,
-  spawnEnd: 12.5,
   maxTickets: 5,
   firstTicketAt: 1.2,
-  /** Every ticket's patience is the recipe's own times this. */
-  patience: 1.15,
-  /** Coins needed for one, two and three stars on the results card. */
-  stars: [130, 290, 460],
+  /** A VIP ticket waits this share of a normal ticket's patience. */
+  vipPatience: 0.6,
 };
 
 export const COOK = {
@@ -91,5 +79,3 @@ export const PALETTE = {
 
 export const FONT = '"Trebuchet MS", "Segoe UI", system-ui, sans-serif';
 
-/** Where the best takings are kept between visits (this browser only). */
-export const BEST_KEY = 'steam-lantern.best';

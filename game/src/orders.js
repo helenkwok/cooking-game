@@ -1,16 +1,20 @@
 // The order board: tickets clipped to the rail, each a dish with a patience clock. A served dish
 // goes to the matching ticket with the least patience left; a ticket that runs out walks away and
 // costs a heart.
+import { SHIFT } from './config.js';
 import { matchRecipe } from './recipes.js';
 
 export function createOrders() {
   return { tickets: [], nextId: 1 };
 }
 
-/** Clip a new ticket for `recipe` to the rail; `patienceScale` shortens waits as the night goes on. */
-export function addTicket(orders, recipe, patienceScale) {
-  const patience = recipe.patience * patienceScale;
-  const ticket = { id: orders.nextId, recipe, patience, left: patience, age: 0, leaving: 0, served: false };
+/**
+ * Clip a new ticket for `recipe` to the rail; `patienceScale` shortens waits as the night goes on.
+ * A VIP ticket (the critic's night) pays double and waits a shorter time.
+ */
+export function addTicket(orders, recipe, patienceScale, vip = false) {
+  const patience = recipe.patience * patienceScale * (vip ? SHIFT.vipPatience : 1);
+  const ticket = { id: orders.nextId, recipe, patience, left: patience, age: 0, leaving: 0, served: false, vip };
   orders.nextId += 1;
   orders.tickets.push(ticket);
   return ticket;
@@ -47,8 +51,10 @@ export function ticketFor(orders, contents) {
   const recipe = matchRecipe(contents);
   if (recipe === null) return null;
   let best = null;
+  // The most urgent ticket for that dish, a VIP first when one is waiting.
   for (const ticket of openTickets(orders)) {
-    if (ticket.recipe.id === recipe.id && (best === null || ticket.left < best.left)) best = ticket;
+    if (ticket.recipe.id !== recipe.id) continue;
+    if (best === null || (ticket.vip && !best.vip) || (ticket.vip === best.vip && ticket.left < best.left)) best = ticket;
   }
   return best;
 }

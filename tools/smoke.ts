@@ -6,6 +6,7 @@
 //   node tools/smoke.ts [--chrome <path>] [--frame <file.jpg>] [--seed N]
 import { writeFileSync } from 'node:fs';
 import { chromeFromArgs, sleep, withChrome, type Page } from './chrome.ts';
+import { KITCHEN_VIEW } from '../game/src/render/layout.js';
 
 const args = process.argv.slice(2);
 const option = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
@@ -44,9 +45,14 @@ async function click(page: Page, x: number, y: number, holdMs = 30) {
 
 const idle = 'window.__world.chef.target === null';
 
+/** A kitchen point on the page: the kitchen is drawn scaled into its view (game/src/render/layout.js). */
+function onScreen(kx: number, ky: number): [number, number] {
+  return [(kx - KITCHEN_VIEW.srcX) * KITCHEN_VIEW.scale + KITCHEN_VIEW.x, (ky - KITCHEN_VIEW.srcY) * KITCHEN_VIEW.scale + KITCHEN_VIEW.y];
+}
+
 /** Click station `id` and wait for the chef to get there and work it. */
 async function visit(page: Page, id: string) {
-  const [x, y] = await read(page, `(() => { const s = window.__world.station('${id}'); return [s.cx, s.cy]; })()`);
+  const [x, y] = await read(page, `(() => { const s = window.__world.station('${id}'); return [s.cx, s.cy]; })()`).then(([kx, ky]) => onScreen(kx, ky));
   await click(page, x, y);
   await sleep(60);
   await waitFor(page, idle, `the chef to reach ${id}`);
@@ -63,7 +69,7 @@ async function prepare(page: Page, kind: string) {
     if (step === null) return;
     const id = step === 'chop' ? 'board-c' : step === 'boil' ? 'pot-a' : 'griddle-a';
     await visit(page, id);
-    const [x, y] = await read(page, `(() => { const s = window.__world.station('${id}'); return [s.cx, s.cy]; })()`);
+    const [x, y] = await read(page, `(() => { const s = window.__world.station('${id}'); return [s.cx, s.cy]; })()`).then(([kx, ky]) => onScreen(kx, ky));
     if (step === 'chop') {
       // Hold the mouse on the board until the knife is done.
       await page.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
@@ -103,6 +109,15 @@ await withChrome(chromeFromArgs(args), async (page, gameUrl) => {
   await press(page, 'p', 'KeyP', 80);
   await sleep(150);
   await press(page, 'p', 'KeyP', 80);
+  // The campaign: fast-forward to closing with a two-star takings, check the next night opens
+  // and that Space on the results card starts it.
+  const night = await read(page, 'window.__world.shift.night.id');
+  await read(page, '(() => { const s = window.__world.shift; s.coins = s.night.stars[1] + 5; s.time = s.seconds - 0.5; return true; })()');
+  await waitFor(page, 'window.__world.shift.over === true', 'the night to end');
+  await sleep(1500);
+  await press(page, ' ', 'Space', 32);
+  await waitFor(page, `window.__world.shift.night.id === ${night + 1} && window.__world.shift.over === false`, `night ${night + 1} to start`);
+  console.log(`night ${night} closed with two stars; Space opened night ${night + 1}: ${await read(page, 'window.__world.shift.night.name')}`);
   // Leave the chef holding something, mid-kitchen, for the saved frame.
   await press(page, '2', 'Digit2', 50);
   await sleep(500);

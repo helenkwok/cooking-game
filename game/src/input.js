@@ -7,6 +7,9 @@ export const KEY_PAUSE = 'pause';
 export const KEY_MUTE = 'mute';
 export const KEY_CONFIRM = 'confirm';
 export const KEY_CRATE = 'crate';
+export const KEY_RETRY = 'retry';
+export const KEY_LEFT = 'left';
+export const KEY_RIGHT = 'right';
 
 const MOVES = {
   KeyW: [0, -1], ArrowUp: [0, -1],
@@ -30,6 +33,9 @@ export function createInput(canvas, toStage) {
     if (e.code === 'KeyQ' || e.code === 'Backspace') presses.push({ type: KEY_TOSS });
     if (e.code === 'KeyP' || e.code === 'Escape') presses.push({ type: KEY_PAUSE });
     if (e.code === 'KeyM') presses.push({ type: KEY_MUTE });
+    if (e.code === 'KeyR') presses.push({ type: KEY_RETRY });
+    if (e.code === 'ArrowLeft') presses.push({ type: KEY_LEFT });
+    if (e.code === 'ArrowRight') presses.push({ type: KEY_RIGHT });
     const digit = /^Digit([1-8])$/.exec(e.code);
     if (digit) presses.push({ type: KEY_CRATE, index: Number(digit[1]) - 1 });
   });

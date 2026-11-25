@@ -1,7 +1,8 @@
 // Paints one frame: fits the 1280x720 stage to the window (letterboxed, sharp on high-density
-// screens), then draws the room, the counters and stations, the chef, the front counter, the
-// effects, the order board and service panel, and whichever screen is up.
-import { ISLAND, STAGE } from '../config.js';
+// screens), draws the kitchen into its view (room, counters and stations, the chef, the front
+// counter, the effects), then the order board and service panel along the top, the sidebar and
+// the status bar, and whichever screen is up.
+import { STAGE, ISLAND } from '../config.js';
 import { stationInReach } from '../chef.js';
 import { openTickets } from '../orders.js';
 import { phaseIndex } from '../shift.js';
@@ -11,7 +12,10 @@ import { drawCornerProps, drawTipJar, drawVignette } from './decor.js';
 import { drawFloaters, drawParticles } from './effects.js';
 import { drawBanner, drawOrderBoard, drawServicePanel } from './hud-view.js';
 import { drawBackCounters, drawFrontCounter, drawIsland, drawRoom, drawStations, drawStringLights } from './kitchen-view.js';
+import { enterKitchen, KITCHEN_VIEW } from './layout.js';
 import { drawPaused, drawResults, drawTitle } from './screens-view.js';
+import { drawSidebar } from './sidebar-view.js';
+import { drawStatusBar } from './status-bar-view.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
@@ -45,31 +49,17 @@ export function createRenderer(canvas) {
     };
   }
 
-  /**
-   * Draw `world` under `screen`. `ui` carries what only the view knows: the effects, the time,
-   * the hovered station, the best takings and the night's served dishes.
-   */
-  function draw(world, screen, ui) {
-    fit();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = '#100a18';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    const shake = ui.fx.shake > 0 ? ui.fx.shake * 10 : 0;
-    ctx.setTransform(view.scale, 0, 0, view.scale, view.ox + (Math.random() - 0.5) * shake, view.oy + (Math.random() - 0.5) * shake);
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(0, 0, STAGE.width, STAGE.height);
-    ctx.clip();
-
+  function drawKitchen(world, ui, playing) {
     const time = ui.time;
     const rush = phaseIndex(world.shift) === 1;
-    const playing = screen === SCREEN_PLAY;
     const reach = playing ? stationInReach(world.chef, world.stations) : null;
     const wanted = new Set(openTickets(world.orders).map((t) => t.recipe.id));
     const useful = playing || ui.hints ? usefulStations(world) : new Set();
     const common = { time, reach, hover: playing ? ui.hover : null, knives: ui.fx.knives, wanted, passDisplay: ui.fx.passDisplay, useful };
     const tag = playing || ui.hints ? heldTag(world) : null;
-
+    ctx.save();
+    if (ui.fx.shake > 0) ctx.translate((Math.random() - 0.5) * ui.fx.shake * 10, (Math.random() - 0.5) * ui.fx.shake * 10);
+    enterKitchen(ctx);
     drawRoom(ctx, time, rush);
     drawBackCounters(ctx);
     drawCornerProps(ctx, time);
@@ -88,14 +78,44 @@ export function createRenderer(canvas) {
     drawStringLights(ctx, time, rush);
     drawVignette(ctx);
     drawParticles(ctx, ui.fx);
-    drawFloaters(ctx, ui.fx);
-    drawOrderBoard(ctx, world.orders, time, ticketProgress(world));
-    drawServicePanel(ctx, world.shift, time, ui.fx.coinPulse);
+    drawFloaters(ctx, ui.fx, false);
+    ctx.restore();
+    // A thin frame round the kitchen view.
+    const v = KITCHEN_VIEW;
+    ctx.strokeStyle = '#2b1d22';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(v.x, v.y, v.srcW * v.scale, v.srcH * v.scale);
+  }
+
+  /**
+   * Draw `world` under `screen`. `ui` carries what only the view knows: the effects, the time,
+   * the hovered station, the best takings, the night's served dishes and the campaign record.
+   */
+  function draw(world, screen, ui) {
+    fit();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#100a18';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(view.scale, 0, 0, view.scale, view.ox, view.oy);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, STAGE.width, STAGE.height);
+    ctx.clip();
+    ctx.fillStyle = '#1b1220';
+    ctx.fillRect(0, 0, STAGE.width, STAGE.height);
+
+    const playing = screen === SCREEN_PLAY;
+    drawKitchen(world, ui, playing);
+    drawOrderBoard(ctx, world.orders, ui.time, ticketProgress(world));
+    drawServicePanel(ctx, world.shift, ui.time, ui.fx.coinPulse);
+    drawSidebar(ctx, world, ui.progress, ui.time);
+    drawStatusBar(ctx, world);
+    drawFloaters(ctx, ui.fx, true);
     if (ui.fx.banner !== null && playing) drawBanner(ctx, ui.fx.banner.message, ui.fx.banner.sub, ui.fx.banner.life);
 
-    if (screen === SCREEN_TITLE) drawTitle(ctx, time, ui.best);
+    if (screen === SCREEN_TITLE) drawTitle(ctx, ui.time, ui.progress, ui.selected);
     else if (screen === SCREEN_PAUSED) drawPaused(ctx);
-    else if (screen === SCREEN_OVER) drawResults(ctx, world.shift, ui.best, time, ui.servedDishes, ui.ready ?? true);
+    else if (screen === SCREEN_OVER) drawResults(ctx, world.shift, ui.time, ui.servedDishes, ui.ready ?? true, ui.outcome);
     ctx.restore();
   }
 
